@@ -39,7 +39,11 @@ The files are just paper. These disciplines are what make it work:
   any agent works on the project: stop on uncertainty (ask, never guess), no
   destructive action without an in-the-moment human yes, a senior-engineer quality bar,
   and the honest-status obligation above. Amended by appending dated entries, never
-  rewritten. It's the cheap guardrail that ships in both tiers.
+  rewritten. It's the cheap guardrail that ships in both tiers. So the rules are
+  in-context at the start of every session — not just sitting in a doc someone has to
+  remember to open — `bootstrap` wires a pointer to the Contract into the project's
+  agent-context file (`CLAUDE.md` / `AGENTS.md`): a short section with the load-bearing
+  rules in brief and a link to the full `<PREFIX>-CONTRACT.md`.
 
 ## The artifacts
 

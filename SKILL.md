@@ -76,8 +76,10 @@ The **Tier** column marks what `bootstrap` scaffolds: `both` = minimal and full;
 
 `<PREFIX>` is the project's short slug in SCREAMING_CASE (e.g. `ADMIN`,
 `CONVMATCHENG`). Templates for every artifact live in `templates/`. The **Contract** is
-the governance layer — the rules an agent must follow; the **Sync map**
-(`.ledger/ledger.json`) is config/plumbing, not itself an artifact.
+the governance layer — the rules an agent must follow; `bootstrap` also wires a pointer
+to it into the project's agent-context file (`CLAUDE.md` / `AGENTS.md`) so the rules are
+read at the start of every session, not just when someone opens the Contract doc. The
+**Sync map** (`.ledger/ledger.json`) is config/plumbing, not itself an artifact.
 
 **Placeholder convention:** templates use `{{TOKEN}}` for fill-in variables (raw
 text, render-stable in GitHub/Confluence); this file and `reference/` use `<TOKEN>`
@@ -137,15 +139,27 @@ genuinely empty repo.
      `docs/briefs/.gitkeep`, `docs/deploy/deploy_runbook.md`,
      `docs/testing/testing_procedure.md`, `docs/bugs/bugs_log.md`, and `docs/research/`
      (a `README.md` index from `templates/research-index.md` + `.gitkeep`).
-4. **Write `.ledger/ledger.json`** (schema in `adapters/README.md`) with config,
+4. **Wire the Contract into the agent-context file (both tiers).** So the rules of
+   engagement are read at the start of work — not buried in the artifact docs — install
+   the pointer block from `templates/CLAUDE-ledger-block.md`, rendering `{{PREFIX}}`:
+   - **Detect the repo's convention.** Look for an existing agent-context file in this
+     order: `CLAUDE.md` (repo root), `.claude/CLAUDE.md`, `AGENTS.md`. Use the first
+     that exists.
+   - **If one exists,** append the rendered block — but **idempotently**: if a section
+     titled `## Project Ledger — rules of engagement` is already present, replace that
+     section in place; never duplicate it. Touch nothing else in the file.
+   - **If none exists,** create `CLAUDE.md` at the repo root containing the block.
+   - This is retrofit-safe: only add or update the ledger section, never clobber
+     existing content.
+5. **Write `.ledger/ledger.json`** (schema in `adapters/README.md`) with config,
    `tier`, `session: 0`, an optional `commit` block (`author` / `coauthor` — omit to
    use the repo's own git identity with no injected co-author), and the chosen `mirror`
    block — `{ "adapter": "none" }`, or the `atlassian` block with empty
    `confluence`/`jira` ID maps (the `confluence` map has a key per page — see
    `adapters/atlassian.md`).
-5. **Do not publish on bootstrap.** Tell the user to review the seeded scoreboard,
+6. **Do not publish on bootstrap.** Tell the user to review the seeded scoreboard,
    then run `/ledger sync` (or open+close the first session) to publish.
-6. Commit per the project's `commit` config — `commit.author` / optional
+7. Commit per the project's `commit` config — `commit.author` / optional
    `commit.coauthor`; if unset, use the repo's own git identity and inject no
    co-author. Use `git add <explicit paths>`, never `git add -A`.
 

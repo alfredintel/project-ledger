@@ -70,6 +70,7 @@ The **Tier** column marks what `bootstrap` scaffolds: `both` = minimal and full;
 | **Testing** | `docs/testing/testing_procedure.md` | how to run tests + pass/fail | full | on test-setup change | — |
 | **Research** | `docs/research/` (folder + index) | deep-dives, comparisons, explorations | full | grows | — |
 | **Journal** | `docs/briefs/BRIEF-session-NN-*.md` + `SESSION-NN-close-out.md` | per-session intent + paired outcome | full | per session | session NN |
+| **Digest** | `docs/digests/digest-<START>_to_<END>.md` | per-window stakeholder summary (shipped + pending) | full, on demand | on `/ledger digest` | window dates |
 | **Index** | `README.md` "Where are we?" block | the front door | both | on bootstrap | — |
 | **Sync map** | `.ledger/ledger.json` | config + tier + mirror adapter + its IDs | both | every publish | — |
 
@@ -93,6 +94,8 @@ Parse the user's input after `/ledger`:
 - `close [session]` (or "close the session", "close-out") → **Mode: close**
 - `status` / nothing / "where are we" → **Mode: status**
 - `sync` (or "publish to confluence") → **Mode: sync**
+- `digest [--since <when>] [--to <when>]` (or "weekly digest", "summarize progress",
+  "what shipped this week") → **Mode: digest**
 
 If the repo has no `.ledger/ledger.json` and the mode is anything other than
 `bootstrap`, say so and offer to bootstrap first.
@@ -229,7 +232,71 @@ creates duplicates — adapters update by the IDs stored in the `mirror` block.
 
 ---
 
-## Rules
+## Mode: digest
+
+Synthesize what shipped and what's pending over a time window into a prose + table
+summary, write it as a local artifact, and publish it (if a publishing adapter is
+configured). **On demand only — never auto-runs on `close`.** You decide the cadence
+(weekly, before a standup, ad hoc). Requires the **full** tier (it reads the session
+journal); on a `minimal`-tier project, say the journal is needed and stop.
+
+`/ledger digest [--since <when>] [--to <when>]`
+
+1. **Resolve the window to concrete ISO dates.** Defaults: `--since` =
+   `digest.defaultWindow` from `.ledger/ledger.json` (or `"last 7 days"` if unset),
+   `--to` = today. Parse fuzzy values against today:
+   - `"last 7 days"` / `"last 2 weeks"` / `"last 30 days"` → today minus that span,
+     inclusive.
+   - `"last friday"` / `"last monday"` → the most recent past occurrence of that
+     weekday, inclusive of the whole day. **If today is that weekday, it means the
+     previous one** (never today).
+   - An ISO date (`"2026-06-15"`) → used verbatim.
+   Compute `START` and `END` as `YYYY-MM-DD`. Everything downstream — the window key,
+   the page title, the filename — uses these resolved dates, so the same window is
+   idempotent regardless of how it was phrased. Echo the resolved window to the user.
+2. **Build the session→date map.** Read every `docs/briefs/SESSION-NN-close-out.md`
+   and take its **Date** field (close-outs carry one; if an older close-out predates
+   the field, fall back to its paired `BRIEF-session-NN` date, then the file's last
+   commit date). This map is the spine: close-outs, resolutions, variances, and
+   `Live` nodes are all tagged `(session NN)`, so map each NN to a date and keep those
+   whose date is in `[START, END]`.
+3. **Gather the window's data:**
+   - **Close-outs** in window → the arc, evidence, and "what's next" for each.
+   - **Resolved queue:** items in the `<PREFIX>_OPEN_ITEMS.md` "Resolved (carried for
+     trail)" section whose `(session NN)` maps into the window.
+   - **Variance:** `V-#` / `VAR-#` in `<PREFIX>_VARIANCE_LOG.md` whose `(session NN)`
+     maps into the window.
+   - **Live nodes:** rows in `docs/<PREFIX>_BUILD_STATUS.md` flipped to `Live` whose
+     `Session` column maps into the window.
+   - **Pending:** current **Open** items + deferred work in the queue, each with its
+     trigger and priority (current state, not window-filtered).
+4. **Verify the canonical files are current** before synthesizing, the way `close`
+   reconciles them: if the scoreboard / queue / variance log have drifted from the
+   latest close-out, reconcile the drift so the digest reports honest state. Digest
+   does **not** write a close-out or bump `session` — it only ensures truth before it
+   summarizes.
+5. **Write the local digest** from `templates/DIGEST.md` to
+   `docs/digests/digest-<START>_to_<END>.md` (create `docs/digests/` if absent). Fill:
+   - **Summary (prose):** "From `<START>` to `<END>`, the project shipped N
+     features/capabilities and resolved M open items. Key accomplishments: [3–5
+     bullets from close-outs]. Remaining priorities: [3–5 from open items with
+     triggers]." Add a sentence or two of honest narrative.
+   - **Shipped this window** table: `| Item | Type (feature/bugfix/hardening) | Session
+     | Evidence / Notes |`.
+   - **Pending** table: `| Item | Type (work/question) | Trigger | Priority |`.
+   - **Open questions & variance** list: the `OQ-#` / `VAR-#` / `V-#` logged in window.
+   - If **no** sessions or resolved items fall in the window, do not emit empty tables:
+     write "No sessions closed in this window; last activity was session NN on
+     `<date>`." and report that to the user instead of failing.
+6. **Publish via the configured adapter** (the digest is local-first, so this mirrors
+   the file). If `mirror.adapter` is `none`, skip — report the local path. Otherwise
+   run the adapter's digest procedure (`atlassian`: ensure the **Project Digest**
+   parent exists under the hub, then create-or-update the child page
+   `Digest: <START> to <END>` by the ID stored in `mirror.confluence.digests["<START>_to_<END>"]`,
+   with the metadata header; write the ID back immediately).
+7. **Commit** the new/updated digest file (+ any reconciled canonical files + the sync
+   map) per the `commit` config — explicit paths, no `git add -A`. Report: the window,
+   the local path, and the page URL if an adapter ran.
 
 - **Local files are the source of truth.** Any mirror (Confluence + Jira, or another
   adapter) is a generated, one-way copy. Never read state back from it into the files.

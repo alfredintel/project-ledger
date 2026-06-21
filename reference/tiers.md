@@ -38,6 +38,8 @@ operational artifacts:
 - **Journal** — paired `BRIEF-session-NN` (intent) + `SESSION-NN-close-out` (outcome).
 - **Paired session cadence** — `open` before work, `close` after. This is what cures
   cold-start amnesia on long build arcs.
+- **Digest** (`docs/digests/`) — on-demand per-window stakeholder summaries via
+  `/ledger digest`. Needs the journal, so it's full-tier only.
 
 Best for platform work, long arcs, anything a stakeholder or a future teammate will
 need to reconstruct.

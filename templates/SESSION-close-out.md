@@ -1,5 +1,7 @@
 # SESSION-{{NN}} — {{goal}} — Close-out
 
+**Type:** outcome · **Date:** {{DATE}}
+
 **Disposition:** **{{DONE | PARTIAL | BLOCKED}}.** {{One-line outcome.}}
 
 ## What was built — the arc

@@ -60,6 +60,12 @@ The **Tier** column marks what `bootstrap` scaffolds — `both` (minimal + full)
 | **Journal** (Briefs) | The session record — one `BRIEF-session-NN` (intent) paired with one `SESSION-NN-close-out` (outcome). The narrative spine of how the project actually went. | full | Append-only | session NN |
 | **Index** | The README "Where are we?" block — the front door that points at all of the above in one place. | both | On bootstrap | — |
 
+Optional 8th artifact: the **Digest** (`docs/digests/`) — per-window summaries for
+stakeholder visibility. Generated on demand by `/ledger digest` (not on every close),
+each one synthesizes what shipped and what's pending over a time window from the session
+close-outs and the resolved queue. Full tier (it reads the journal); local-first, then
+mirrored if a publishing adapter is configured.
+
 Optional extra: a **context handoff** for cold-starting a fresh conversation, when the
 working context outgrows the scoreboard's live-state block. Fold it into the
 scoreboard until it earns its own file.

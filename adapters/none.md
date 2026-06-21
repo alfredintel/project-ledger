@@ -8,6 +8,8 @@ The default. No external mirror. The files in the repo are the entire ledger.
   scoreboard lives. All these files live in the repo; `none` just doesn't push them
   anywhere.
 - **`status`:** fully local — read `docs/<PREFIX>_BUILD_STATUS.md` and the queue.
+- **`digest`:** writes the local digest at `docs/digests/digest-<START>_to_<END>.md`
+  and stops there — no Confluence page, no page tree. The local file is the digest.
 - **No metadata header, no page tree, no Jira issues.**
 
 Use this for solo projects, greenfield work, anything not published to a shared

@@ -48,7 +48,9 @@ This adapter's config + idempotency record. Committed to the repo.
     "research": "<pageId>",
     "research_docs": { "<doc-slug>": "<pageId>" },
     "session_log": "<pageId>",
-    "sessions": { "01": "<pageId>", "02": "<pageId>" }
+    "sessions": { "01": "<pageId>", "02": "<pageId>" },
+    "digest_hub": "<pageId>",
+    "digests": { "<START>_to_<END>": "<pageId>" }
   },
   "jira": {
     "A-1": "ARDM-123",
@@ -61,8 +63,10 @@ This adapter's config + idempotency record. Committed to the repo.
 
 `research` is the parent page (a string), and `research_docs` is its `{doc-slug:
 pageId}` sub-map of children — one child per doc in `docs/research/`, mirroring the
-`session_log` + `sessions` pattern. The Contract page is included only when the project
-publishes it (it does by default; see §2).
+`session_log` + `sessions` pattern. `digest_hub` is the **Project Digest** parent page,
+and `digests` is its `{<START>_to_<END>: pageId}` sub-map — one child per window
+published by `/ledger digest` (same parent + sub-map pattern). The Contract page is
+included only when the project publishes it (it does by default; see §2).
 
 The example values are the Reflex/ARDM target. Another Atlassian workspace fills its own
 `mcpServer` / `site` / `confluenceSpace` / `jiraProject` / `vertical` — nothing here is
@@ -110,6 +114,8 @@ Fill per page:
 | Testing Procedure | `notes` | `In Progress` | from config | (blank) |
 | Bugs Log | `notes` | `In Progress` | from config | `BUG-#` issues |
 | Research (parent + children) | `notes` | `In Progress` | from config | (blank) |
+| Project Digest (parent) | `notes` | `In Progress` | from config | (blank) |
+| Digest: START to END | `notes` | `published` | from config | issues in window |
 | Session NN | `notes` | `Approved` once closed | from config | issues touched |
 
 `Last reviewed` is always today (`date +%F`). `Vertical` and `Feature status` come from
@@ -131,14 +137,18 @@ Fill per page:
 ├── <Project> — Research                 (notes)  parent: hub   (parent; one child per doc)
 │   ├── <Project> — Research: <doc-slug>          parent: research
 │   └── …
+├── <Project> — Project Digest           (notes)  parent: hub   (parent; one child per window)
+│   ├── <Project> — Digest: <START> to <END>      parent: digest_hub
+│   └── …
 └── <Project> — Session Log              (notes)  parent: hub
     ├── <Project> — Session 05: <slug>            parent: session_log
     └── <Project> — Session 04: <slug>            parent: session_log
 ```
 
 Only pages whose source artifact exists are published — a `minimal`-tier project has no
-Variance/Runbook/Testing/Bugs/Research/Frame, so those pages are skipped. The Contract
-page is published when `mirror.publishContract` is true (default true).
+Variance/Runbook/Testing/Bugs/Research/Digest/Frame, so those pages are skipped. The
+Contract page is published when `mirror.publishContract` is true (default true). The
+Project Digest parent is created lazily the first time `/ledger digest` publishes.
 
 Page bodies (source file → page):
 
@@ -154,6 +164,8 @@ Page bodies (source file → page):
 | Bugs Log | `docs/bugs/bugs_log.md` | verbatim (Open + Fixed sections) |
 | Research (parent) | `docs/research/README.md` | the index doc |
 | Research: <doc-slug> | `docs/research/<doc-slug>.md` | one child per doc, verbatim |
+| Project Digest (parent) | — | a generated index listing each window's digest + link |
+| Digest: START to END | `docs/digests/digest-<START>_to_<END>.md` | one child per window, verbatim |
 | Session NN | `docs/briefs/SESSION-NN-close-out.md` | + a link back to its brief |
 
 Strip the source file's top-level `# H1` (the Confluence page has a title). Keep all
@@ -185,6 +197,21 @@ Create-or-update the `research` parent page from `docs/research/README.md`
 (`mirror.confluence.research`). Then for each `docs/research/<doc-slug>.md` (excluding
 the README index), create-or-update a child under it, keyed by `<doc-slug>` in
 `mirror.confluence.research_docs` — exactly the `session_log` + `sessions` pattern.
+
+### Project Digest tree (one child per window) — runs on `/ledger digest`, not `close`
+
+This subtree is published only by **Mode: digest**, not by the normal `close`/`sync`
+walk above. When `/ledger digest` publishes:
+
+1. Ensure the **Project Digest** parent exists: if `mirror.confluence.digest_hub` is
+   empty, create it under the hub (title `<Project> — Project Digest`, page type
+   `notes`, metadata header) and write the ID back. Its body is a generated index that
+   lists each window with a link to its child — refresh it whenever a child is added.
+2. Create-or-update the window child from `docs/digests/digest-<START>_to_<END>.md`,
+   keyed by `"<START>_to_<END>"` in `mirror.confluence.digests`, parent =
+   `digest_hub`, title `<Project> — Digest: <START> to <END>`. Empty key → create and
+   write the ID back; existing key → update in place. Re-running the same window
+   updates its page, never duplicates.
 
 ### Session page (new each close)
 

@@ -48,6 +48,7 @@ The `mirror` block lives inside the project's sync map. The other top-level keys
   "session": 0,
   "statusVocab": ["Live", "Current", "Planned"],
   "commit": { "author": "<Name <email>>", "coauthor": "" },
+  "digest": { "defaultWindow": "last 7 days", "includeSummaryInSlack": false },
   "mirror": { "adapter": "none" }
 }
 ```
@@ -57,6 +58,10 @@ The `mirror` block lives inside the project's sync map. The other top-level keys
   `commit.coauthor` only when it's non-empty. If the whole block is absent, the skill
   uses the repo's own configured git identity and injects no co-author. Nothing
   author-specific is baked into the skill.
+- `digest` is **optional**. `defaultWindow` is the `--since` used when `/ledger digest`
+  is run with no window (falls back to `"last 7 days"` if absent).
+  `includeSummaryInSlack` is reserved for future use. Digest is a `full`-tier, on-demand
+  mode — see `SKILL.md` → Mode: digest.
 - `mirror` selects the publish adapter (below).
 
 ## The `mirror` block
@@ -85,18 +90,20 @@ The `mirror` block lives inside the project's sync map. The other top-level keys
     "hub": "", "build_status": "", "roadmap": "", "variance": "",
     "contract": "", "runbook": "", "testing": "", "bugs": "",
     "research": "", "research_docs": {},
-    "session_log": "", "sessions": {}
+    "session_log": "", "sessions": {},
+    "digest_hub": "", "digests": {}
   },
   "jira": {}
 }
 ```
 
 The example values are the Reflex/ARDM target — they are config, not part of the skill.
-`confluence` has one key per published page; `research` is the parent page and
-`research_docs` its per-doc child sub-map (mirrors `session_log` + `sessions`). Only keys
-whose source artifact exists get published, so a `minimal`-tier project leaves most
-empty. The `jira` map covers both open-item IDs and `BUG-#` defect IDs. Full per-page
-schema and semantics in `atlassian.md`.
+`confluence` has one key per published page; `research` / `research_docs` and
+`digest_hub` / `digests` are parent-page + per-child sub-map pairs (both mirror the
+`session_log` + `sessions` pattern — `digests` is keyed by `"<START>_to_<END>"` window).
+Only keys whose source artifact exists get published, so a `minimal`-tier project leaves
+most empty. The `jira` map covers both open-item IDs and `BUG-#` defect IDs. Full
+per-page schema and semantics in `atlassian.md`.
 
 ## Adding an adapter
 

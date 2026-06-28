@@ -19,6 +19,13 @@ repo. The load-bearing ones:
 - **Senior-engineer bar.** Hold all work to a senior engineer's standard: the
   architecture stays coherent, and status labels stay honest — uncertain is marked
   uncertain, never optimistic.
+- **Ground in current docs.** For third-party APIs/SDKs or high-stakes flows (auth,
+  billing, migrations, deploys), verify against current primary docs before acting —
+  don't code from memory; name the source.
+
+Autonomous work is opt-in (`/ledger open --autonomous`, "plow ahead"): proceed through
+ordinary ambiguity only by logging stated assumptions in the ledger, and never waive the
+no-irreversible-action rule. Full detail in the Contract.
 
 Work happens in sessions: `/ledger open` before, `/ledger close` after. The scoreboard
 (`docs/{{PREFIX}}_BUILD_STATUS.md`) is the source of truth for "where are we." See

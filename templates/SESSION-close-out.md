@@ -8,6 +8,11 @@
 - {{the sequence of what was delivered, in order}}
 - {{...}}
 
+## Decisions & assumptions
+- {{Each non-trivial choice made without stopping, with a one-line reason. For an
+  autonomous session this is required — every assumption that stood in for a question the
+  agent would normally have asked, plus where it's tracked (OQ-#). "None" if interactive.}}
+
 ## Review pass (same session)
 - **{{Bug fixed / decision}}:** {{what was caught and how it was closed}}.
 

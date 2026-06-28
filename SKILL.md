@@ -92,7 +92,7 @@ inside code spans. Same variables, two render-safe contexts — substitute both.
 Parse the user's input after `/ledger`:
 
 - `bootstrap` (or "start a ledger", "set up tracking") → **Mode: bootstrap**
-- `open <session name>` (or "open a session") → **Mode: open**
+- `open <session name> [--autonomous]` (or "open a session") → **Mode: open**
 - `close [session]` (or "close the session", "close-out") → **Mode: close**
 - `status` / nothing / "where are we" → **Mode: status**
 - `sync` (or "publish to confluence") → **Mode: sync**
@@ -173,10 +173,18 @@ Begin a session with a brief — intent before code.
    (`01`, `02`, …).
 2. From `templates/BRIEF-session.md`, write
    `docs/briefs/BRIEF-session-NN-<kebab-goal>.md` with: one **bounded goal**, scope,
-   constraints, done criteria. One goal per session arc, not "keep working on it."
-3. Show the brief to the user for an eyeball pass before any code. Fold divergences
-   into the brief.
-4. Do **not** increment `session` in the sync map yet — that happens at close, so a
+   constraints, done criteria, and the **Mode** (`interactive` by default, or
+   `autonomous` if `--autonomous` was passed or the operator said "plow ahead" / "use
+   your judgment"). One goal per session arc, not "keep working on it."
+3. **If autonomous:** fill the brief's **Assumptions** block with the standing
+   assumptions the agent may proceed on, per Contract rule 6 — default stop on
+   uncertainty is lifted for *ordinary* ambiguity only; the destructive floor (rule 2)
+   and honest status (rule 5) still bind, and mid-session ambiguity becomes a logged
+   `OQ-#`, never a silent guess.
+4. Show the brief to the user for an eyeball pass before any code. Fold divergences
+   into the brief. (An autonomous brief still gets this pass — autonomy is for the work,
+   not for skipping the stated goal.)
+5. Do **not** increment `session` in the sync map yet — that happens at close, so a
    brief can be revised or abandoned without burning a number.
 
 ---
@@ -190,8 +198,10 @@ this mode, `NN` = `session + 1` (the session being closed).
 
 1. **Write the close-out** from `templates/SESSION-close-out.md`:
    `docs/briefs/SESSION-NN-close-out.md`. Disposition (DONE / PARTIAL / BLOCKED),
-   the arc of what was built, any review-pass fixes, **evidence** (tests, live
-   verification — not vibes), known gaps still open, and what's next.
+   the arc of what was built, the **Decisions & assumptions** made along the way (for an
+   autonomous session this is required — every assumption that stood in for a question,
+   with its `OQ-#`), any review-pass fixes, **evidence** (tests, live verification — not
+   vibes), known gaps still open, and what's next.
 2. **Reconcile the scoreboard** (`docs/<PREFIX>_BUILD_STATUS.md`): flip any node
    whose status changed, update the session column, refresh the **live operational
    state** block, bump "Last updated". Keep `Live` honest — it means proven against
@@ -334,3 +344,25 @@ journal); on a `minimal`-tier project, say the journal is needed and stop.
 Report one of: **DONE** (with evidence: files written, pages published, issue keys),
 **DONE_WITH_CONCERNS**, **BLOCKED** (state the blocker + what was tried),
 **NEEDS_CONTEXT** (state exactly what's missing).
+
+## Status signal (end every mode with one line)
+
+Make completion state legible at a glance — the same honest-status invariant, at the
+response level. Every `/ledger` mode that finishes a unit of work ends its response with
+a single status line, and nothing after it:
+
+```
+🟢 <one concise sentence, under ~100 chars>
+```
+
+- **🟢** — finished, nothing blocking (maps to **DONE**).
+- **🟡** — done but non-routine follow-up remains; name the pending item (maps to
+  **DONE_WITH_CONCERNS** / a **PARTIAL** close).
+- **🔴** — blocked on operator input; name what's needed (maps to **BLOCKED** /
+  **NEEDS_CONTEXT**).
+
+Choose the color from the operator's perspective: finished, pending-a-named-step, or
+blocked. One line, at the very end, no `---` or spacer after it. Examples:
+`🟢 Closed session 06; scoreboard reconciled, digest published to Confluence` ·
+`🟡 Close-out written; set LEDGER_SLACK_WEBHOOK before the digest will notify` ·
+`🔴 Need the Confluence space key before sync can publish`.

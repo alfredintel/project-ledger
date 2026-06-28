@@ -51,8 +51,12 @@ The files are just paper. These disciplines are what make it work:
 - **The Contract binds the agent.** A standing set of rules of engagement governs how
   any agent works on the project: stop on uncertainty (ask, never guess), no
   destructive action without an in-the-moment human yes, a senior-engineer quality bar,
-  and the honest-status obligation above. Amended by appending dated entries, never
-  rewritten. The cheap guardrail that ships in both tiers.
+  grounding in current primary docs (don't assume from memory), and the honest-status
+  obligation above. It also defines **autonomy** as an opt-in exception — when the
+  operator authorizes it (`/ledger open --autonomous`, "plow ahead"), the agent proceeds
+  through ordinary ambiguity by logging stated assumptions in the ledger, while the
+  destructive floor and honest status never lift. Amended by appending dated entries,
+  never rewritten. The cheap guardrail that ships in both tiers.
 
 ---
 
@@ -63,7 +67,7 @@ The **Tier** column marks what `bootstrap` scaffolds: `both` = minimal and full 
 
 | Artifact | File | Job | Tier | Cadence |
 |---|---|---|---|---|
-| **Contract** | `<PREFIX>-CONTRACT.md` | Rules of engagement for any agent — stop on uncertainty, no destructive action without a human yes, senior-engineer quality bar, honest status. | both | amend-only |
+| **Contract** | `<PREFIX>-CONTRACT.md` | Rules of engagement for any agent — stop on uncertainty, no destructive action without a human yes, senior-engineer quality bar, ground-in-current-docs, honest status, and opt-in autonomy. | both | amend-only |
 | **Frame** | `<PREFIX>-OVERVIEW.md` | What we're building and why — thesis, destination. The north star. | full | rare edits |
 | **Scoreboard** | `docs/<PREFIX>_BUILD_STATUS.md` | Where are we — every node + status + live operational state. **Start here.** | both | every session |
 | **Queue** | `<PREFIX>_OPEN_ITEMS.md` | What's next — open items with stable IDs + a *trigger* each, plus a resolved trail. | both | every session |
@@ -105,7 +109,7 @@ publish →  via the mirror adapter (none = local-only, the default;
 | Mode | What it does |
 |---|---|
 | `bootstrap` | Stand up the ledger in a repo, **seeded from real state** (git log + README + source). Picks a tier (minimal/full) and a mirror adapter (none/atlassian). Writes the Contract and wires a pointer to it into the project's agent-context file (`CLAUDE.md` / `AGENTS.md`) so the rules of engagement are read at the start of work. Retrofits hand-built artifacts instead of overwriting them. Writes `.ledger/ledger.json`. Does **not** publish. |
-| `open <name>` | Begin a session with a brief — one bounded goal, intent before code. |
+| `open <name> [--autonomous]` | Begin a session with a brief — one bounded goal, intent before code. `--autonomous` lifts stop-on-uncertainty for ordinary ambiguity (assumptions get logged), never for destructive actions. |
 | `close [session]` | The heavy mode. Write the close-out, reconcile the canonical files (scoreboard, queue, variance log, and — full tier — bugs log), then publish via the configured adapter. Files first (source of truth), publish second. |
 | `status` | Answer "where are we" in seconds from the scoreboard. Flags drift if the scoreboard is staler than the latest close-out. |
 | `sync` | Force a re-publish through the configured mirror adapter from current file state, no close-out (use after hand-edits or right after bootstrap). |

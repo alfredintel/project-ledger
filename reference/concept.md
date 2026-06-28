@@ -30,7 +30,9 @@ The files are just paper. These disciplines are what make it work:
   spectrum: *proven-live → built-but-unproven → planned → speculative*. The exact
   words flex per project (`Live / Current / Planned` for deployed software;
   `Current / Built-mock / Planned / Research` for greenfield), but the spine is the
-  same. Uncertain is marked uncertain, never optimistic.
+  same. Uncertain is marked uncertain, never optimistic. The same honesty shows up at
+  the response level: every `/ledger` mode ends with a one-line 🟢/🟡/🔴 status signal so
+  "where are we" is legible at a glance (see SKILL.md → Status signal).
 - **Paired session cadence.** Work happens in sessions. Each opens with a **brief**
   (one bounded goal, intent before code) and closes with a **close-out**
   (disposition, evidence, what's next). The close-out reconciles the canonical files.
@@ -38,8 +40,13 @@ The files are just paper. These disciplines are what make it work:
 - **The Contract binds the agent.** A standing set of rules of engagement governs how
   any agent works on the project: stop on uncertainty (ask, never guess), no
   destructive action without an in-the-moment human yes, a senior-engineer quality bar,
-  and the honest-status obligation above. Amended by appending dated entries, never
-  rewritten. It's the cheap guardrail that ships in both tiers. So the rules are
+  grounding in current primary docs (don't assume from memory), and the honest-status
+  obligation above. It also defines **autonomy** as an opt-in exception to stop-on-
+  uncertainty: when the operator authorizes it, the agent proceeds through ordinary
+  ambiguity by logging stated assumptions in the ledger (open items + close-out) — the
+  destructive floor and honest status never lift, so autonomy never costs honesty.
+  Amended by appending dated entries, never rewritten. The cheap guardrail that ships in
+  both tiers. So the rules are
   in-context at the start of every session — not just sitting in a doc someone has to
   remember to open — `bootstrap` wires a pointer to the Contract into the project's
   agent-context file (`CLAUDE.md` / `AGENTS.md`): a short section with the load-bearing

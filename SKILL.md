@@ -229,8 +229,11 @@ this mode, `NN` = `session + 1` (the session being closed).
    changed — append a dated entry, never rewrite.
 7. **Bump `session`** in `.ledger/ledger.json` to NN.
 8. **Publish (auto on close) via the configured mirror adapter.** Read `mirror.adapter`
-   from `.ledger/ledger.json`. If `none`, skip — the local files are the whole ledger.
-   Otherwise run `adapters/<adapter>.md` exactly (e.g. `atlassian`: hub first, then each
+   from `.ledger/ledger.json`. If `none` (off), skip silently — the local files are the
+   whole ledger. If a publishing adapter is set but **unavailable** (its `mirror.mcpServer`
+   tools aren't in scope), degrade per **Capabilities & graceful degradation**: skip
+   publish, keep all local files, report `DONE_WITH_CONCERNS`. Otherwise run
+   `adapters/<adapter>.md` exactly (e.g. `atlassian`: hub first, then each
    content child create-or-update by stored page ID with the required metadata header
    — Build Status, Roadmap, Variance, Contract, Runbook, Testing, Bugs, Research — then
    the **Session NN** child under Session Log; Jira create-or-update per open item and
@@ -254,14 +257,28 @@ the live operational state block, and the top open items from the queue with the
 triggers. Do not re-derive from git — the scoreboard is the answer. If the
 scoreboard's "Last updated" is older than the latest close-out, flag the drift.
 
+Then print a **Capabilities** line (per **Capabilities & graceful degradation** below) so
+it's visible what this project's ledger does and doesn't do. For each external function
+report its state — `on` / `off` / `unavailable` — checked read-only and cheaply:
+
+- **Mirror:** `off` if `mirror.adapter` is `none`; else `on` if the `mirror.mcpServer`
+  tools are in scope, or `unavailable (<server> not in scope)` if not.
+- **Slack:** `off` if `notify.slack` is absent/disabled or `events` is empty; else `on` if
+  the webhook env var (`notify.slack.webhookEnvVar`) is set, or `unavailable (<VAR> unset)`.
+- **Digest / local artifacts:** always `available` (no external dependency).
+
+Example: `Capabilities — Mirror: off (local-only) · Slack: unavailable (LEDGER_SLACK_WEBHOOK unset) · Digest: available`.
+
 ---
 
 ## Mode: sync
 
 Force a re-publish from the current file state without writing a close-out (use after
-hand-edits, or right after bootstrap). Run the configured mirror adapter only (close
-step 6). If `mirror.adapter` is `none`, there's nothing to publish — say so. Never
-creates duplicates — adapters update by the IDs stored in the `mirror` block.
+hand-edits, or right after bootstrap). Run the configured mirror adapter only. If
+`mirror.adapter` is `none` (off), there's nothing to publish — say so. If the adapter is
+set but **unavailable** (server not in scope), degrade per **Capabilities & graceful
+degradation** — report `DONE_WITH_CONCERNS`, nothing published, rerun when it's back.
+Never creates duplicates — adapters update by the IDs stored in the `mirror` block.
 
 ---
 
@@ -329,7 +346,9 @@ journal); on a `minimal`-tier project, say the journal is needed and stop.
      write "No sessions closed in this window; last activity was session NN on
      `<date>`." and report that to the user instead of failing.
 6. **Publish via the configured adapter** (the digest is local-first, so this mirrors
-   the file). If `mirror.adapter` is `none`, skip — report the local path. Otherwise
+   the file). If `mirror.adapter` is `none`, skip — report the local path. If the adapter
+   is set but **unavailable**, degrade per **Capabilities & graceful degradation** (local
+   digest stands, publish deferred, `DONE_WITH_CONCERNS`). Otherwise
    run the adapter's digest procedure (`atlassian`: ensure the **Project Digest**
    parent exists under the hub, then create-or-update the child page
    `Digest: <START> to <END>` by the ID stored in `mirror.confluence.digests["<START>_to_<END>"]`,
@@ -341,6 +360,43 @@ journal); on a `minimal`-tier project, say the journal is needed and stop.
 8. **Commit** the new/updated digest file (+ any reconciled canonical files + the sync
    map) per the `commit` config — explicit paths, no `git add -A`. Report: the window,
    the local path, the page URL if an adapter ran, and whether Slack was notified.
+
+---
+
+## Capabilities & graceful degradation
+
+The ledger's **external-dependent functions** are independently switchable, and any that
+isn't available is skipped gracefully — never a failure. Local functions (the artifacts,
+`status`, the digest's local file) have no external dependency and are always available.
+
+| Capability | Config switch | Depends on |
+|---|---|---|
+| **Mirror** (publish to Confluence/Jira) | `mirror.adapter` (`none` = off) | the MCP server in `mirror.mcpServer` being in scope |
+| **Slack notify** | `notify.slack.enabled` + `events` | the webhook URL in `$<notify.slack.webhookEnvVar>` |
+
+Each capability is in one of three states:
+
+- **off** — disabled in config (`mirror.adapter: none`; `notify.slack` absent/disabled or
+  `events: []`). Treat its external work as a **silent no-op**; don't mention it unless
+  asked.
+- **on** — enabled in config **and** its dependency resolves. Do the external action.
+- **unavailable** — enabled in config but the dependency is missing at runtime (the MCP
+  server isn't in scope; the webhook env var is unset). **Degrade, don't fail:** do all
+  the local work, skip only the external action, and report it honestly as
+  `DONE_WITH_CONCERNS` — e.g. "mirror enabled (`atlassian`) but `<server>` not in scope —
+  ran local-only; rerun `/ledger sync` when it's back," or "Slack enabled but
+  `LEDGER_SLACK_WEBHOOK` unset — notification skipped." The source-of-truth files are
+  always written regardless.
+
+**Preflight.** At the start of `close` / `sync` / `digest`, resolve each capability's
+state *before* attempting its external action, so a missing dependency degrades cleanly
+instead of erroring mid-publish. `status` reports the states without acting (see Mode:
+status). The rule is uniform: **disabled → silent; unavailable → local + honest concern;
+the local ledger never depends on any integration.**
+
+---
+
+## Rules
 
 - **Local files are the source of truth.** Any mirror (Confluence + Jira, or another
   adapter) is a generated, one-way copy. Never read state back from it into the files.

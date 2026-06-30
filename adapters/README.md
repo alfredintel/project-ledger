@@ -69,6 +69,13 @@ The `mirror` block lives inside the project's sync map. The other top-level keys
   in `notifiers/` (`notifiers/README.md`, `notifiers/slack.md`).
 - `mirror` selects the publish adapter (below).
 
+`mirror` and `notify` are the project's **capability switches** for its external functions.
+Each is independently on/off, and any function whose dependency is missing at runtime (the
+MCP server out of scope, the webhook env var unset) **degrades gracefully** — the local
+ledger is always written; only the external action is skipped, reported as
+`DONE_WITH_CONCERNS`. `/ledger status` shows each as `on` / `off` / `unavailable`. Full
+rule in `SKILL.md` → **Capabilities & graceful degradation**.
+
 ## The `mirror` block
 
 `none`:

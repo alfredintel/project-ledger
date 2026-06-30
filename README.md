@@ -111,7 +111,7 @@ publish →  via the mirror adapter (none = local-only, the default;
 | `bootstrap` | Stand up the ledger in a repo, **seeded from real state** (git log + README + source). Picks a tier (minimal/full) and a mirror adapter (none/atlassian). Writes the Contract and wires a pointer to it into the project's agent-context file (`CLAUDE.md` / `AGENTS.md`) so the rules of engagement are read at the start of work. Retrofits hand-built artifacts instead of overwriting them. Writes `.ledger/ledger.json`. Does **not** publish. |
 | `open <name> [--autonomous]` | Begin a session with a brief — one bounded goal, intent before code. `--autonomous` lifts stop-on-uncertainty for ordinary ambiguity (assumptions get logged), never for destructive actions. |
 | `close [session]` | The heavy mode. Write the close-out, reconcile the canonical files (scoreboard, queue, variance log, and — full tier — bugs log), then publish via the configured adapter. Files first (source of truth), publish second. |
-| `status` | Answer "where are we" in seconds from the scoreboard. Flags drift if the scoreboard is staler than the latest close-out. |
+| `status` | Answer "where are we" in seconds from the scoreboard. Flags drift if the scoreboard is staler than the latest close-out. Also reports **capabilities** — mirror / Slack as `on` / `off` / `unavailable`. |
 | `sync` | Force a re-publish through the configured mirror adapter from current file state, no close-out (use after hand-edits or right after bootstrap). |
 | `digest [--since <when>] [--to <when>]` | Generate a digest of what shipped and what's pending over a time window (default: last 7 days). Pulls from session close-outs and the resolved queue. Writes `docs/digests/` and publishes a Confluence page under the hub. On demand — never auto-runs on close. |
 
@@ -156,6 +156,13 @@ first: enable `notify.slack` in `.ledger/ledger.json` and it posts the `digest` 
 link). The webhook URL is read from an env var (`webhookEnvVar`, default
 `LEDGER_SLACK_WEBHOOK`), never committed; a missing webhook fails soft (the digest/close
 still completes). Off by default. Contract + procedure in `ledger/notifiers/`.
+
+**Capabilities & graceful degradation.** `mirror` and `notify` are independent on/off
+switches for the project's external functions. A project with no Confluence/Jira or Slack
+just runs local-only; and a function that's enabled but whose dependency is missing at
+runtime (MCP server out of scope, webhook unset) **degrades** — the local ledger is always
+written, only the external step is skipped and reported (`DONE_WITH_CONCERNS`).
+`/ledger status` shows each as `on` / `off` / `unavailable`.
 
 ---
 

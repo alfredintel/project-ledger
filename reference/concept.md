@@ -139,6 +139,13 @@ with whatever adapter is set, so a project can mirror to Confluence *and* ping S
 run `none` and still ping. Configured under `notify`; secret read from an env var, never
 committed; fails soft so a missing webhook never blocks the source-of-truth write.
 
+Both the mirror and notifiers are **capability switches** — independently on/off per
+project — and they degrade gracefully: a function that's disabled is a silent no-op, and
+one that's enabled but whose dependency is missing at runtime runs local-only and reports
+the gap honestly rather than failing. The local ledger never depends on any integration;
+that's what lets the same skill serve a fully-offline solo repo and a Confluence-mirrored
+team project without changing the discipline.
+
 ## Maintenance rules
 
 - Update the scoreboard when a node changes status, when something is

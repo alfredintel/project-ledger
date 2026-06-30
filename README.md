@@ -147,6 +147,16 @@ The `atlassian` adapter's example target is the Reflex workspace (site
 never baked into the skill. Another workspace fills its own. Commit identity is config
 too (`commit` block; defaults to the repo's own git identity, no injected co-author).
 
+### Notifications (Slack)
+
+Separate from the mirror, a **notifier** can ping a channel when work lands. Slack is the
+first: enable `notify.slack` in `.ledger/ledger.json` and it posts the `digest` summary
+(and optionally the `close` disposition) to a channel via an incoming webhook. It
+**composes** with any adapter — even `none` gets the ping (with the local path as the
+link). The webhook URL is read from an env var (`webhookEnvVar`, default
+`LEDGER_SLACK_WEBHOOK`), never committed; a missing webhook fails soft (the digest/close
+still completes). Off by default. Contract + procedure in `ledger/notifiers/`.
+
 ---
 
 ## Repository layout
@@ -157,16 +167,21 @@ This directory is the repo root (the canonical home of `/ledger`):
 ledger/                        ← the skill source (this repo)
 ├── README.md                  ← you are here (project overview)
 ├── .gitignore
-├── SKILL.md                   the skill entrypoint: dispatch + the five modes
+├── BACKLOG.md                 deferred items + known-unproven surfaces
+├── SKILL.md                   the skill entrypoint: dispatch + the six modes
 ├── reference/
 │   ├── concept.md             the methodology, in depth
 │   └── tiers.md               minimal vs full — what each scaffolds
-├── adapters/                  pluggable publish targets
-│   ├── README.md              the adapter contract + the ledger.json / mirror schema
+├── adapters/                  pluggable publish targets (the mirror)
+│   ├── README.md              the adapter contract + the ledger.json schema
 │   ├── none.md                local-only (the default)
 │   └── atlassian.md           Confluence + Jira publish procedure
-└── templates/                 one per artifact + the README index block
+├── notifiers/                 pluggable channel pings (compose with the mirror)
+│   ├── README.md              the notifier contract + the notify schema
+│   └── slack.md               Slack incoming-webhook procedure
+└── templates/                 one per artifact + the README / CLAUDE blocks
     ├── CONTRACT.md
+    ├── CLAUDE-ledger-block.md
     ├── FRAME.md
     ├── BUILD_STATUS.md
     ├── OPEN_ITEMS.md
@@ -175,6 +190,7 @@ ledger/                        ← the skill source (this repo)
     ├── deploy_runbook.md
     ├── testing_procedure.md
     ├── research-index.md
+    ├── DIGEST.md
     ├── BRIEF-session.md
     ├── SESSION-close-out.md
     └── README-index.md

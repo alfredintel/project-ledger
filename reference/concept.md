@@ -132,6 +132,13 @@ page's ID and each open item's key under `mirror`. First publish creates; every 
 after updates by ID. No duplicates. Adapter contract + per-adapter procedure in
 `adapters/`.
 
+Distinct from the mirror are **notifiers** (`notifiers/`): a notifier *pings* a channel
+(Slack today) when a `digest` or `close` lands. It is not a mirror — it keeps no durable
+state and isn't idempotent (a ping is a stream, not a synced page) — and it **composes**
+with whatever adapter is set, so a project can mirror to Confluence *and* ping Slack, or
+run `none` and still ping. Configured under `notify`; secret read from an env var, never
+committed; fails soft so a missing webhook never blocks the source-of-truth write.
+
 ## Maintenance rules
 
 - Update the scoreboard when a node changes status, when something is

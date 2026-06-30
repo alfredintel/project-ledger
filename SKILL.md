@@ -236,9 +236,13 @@ this mode, `NN` = `session + 1` (the session being closed).
    the **Session NN** child under Session Log; Jira create-or-update per open item and
    per `BUG-#`, resolved/fixed items transitioned to Done; record every ID back into
    the `mirror` block).
-9. **Commit** the reconciled files + updated sync map per the `commit` config (explicit
+9. **Notify (if configured).** If `notify.slack.enabled` and `"close"` is in
+   `notify.slack.events`, post the close summary (session NN, disposition, what's next)
+   per `notifiers/slack.md`. **Fail soft** — a missing webhook never aborts the close.
+   Skip if no notifier is enabled.
+10. **Commit** the reconciled files + updated sync map per the `commit` config (explicit
    paths, no injected co-author unless configured). Report: what changed, what
-   published, and the hub URL if an adapter ran.
+   published, the hub URL if an adapter ran, and whether Slack was notified.
 
 ---
 
@@ -330,9 +334,13 @@ journal); on a `minimal`-tier project, say the journal is needed and stop.
    parent exists under the hub, then create-or-update the child page
    `Digest: <START> to <END>` by the ID stored in `mirror.confluence.digests["<START>_to_<END>"]`,
    with the metadata header; write the ID back immediately).
-7. **Commit** the new/updated digest file (+ any reconciled canonical files + the sync
+7. **Notify (if configured).** If `notify.slack.enabled` and `"digest"` is in
+   `notify.slack.events`, post the digest summary per `notifiers/slack.md` (link = the
+   Confluence page URL if step 6 published one, else the local path). **Fail soft** — a
+   missing webhook or failed send never aborts the digest. Skip if no notifier is enabled.
+8. **Commit** the new/updated digest file (+ any reconciled canonical files + the sync
    map) per the `commit` config — explicit paths, no `git add -A`. Report: the window,
-   the local path, and the page URL if an adapter ran.
+   the local path, the page URL if an adapter ran, and whether Slack was notified.
 
 - **Local files are the source of truth.** Any mirror (Confluence + Jira, or another
   adapter) is a generated, one-way copy. Never read state back from it into the files.

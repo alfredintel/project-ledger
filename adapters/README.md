@@ -49,6 +49,7 @@ The `mirror` block lives inside the project's sync map. The other top-level keys
   "statusVocab": ["Live", "Current", "Planned"],
   "commit": { "author": "<Name <email>>", "coauthor": "" },
   "digest": { "defaultWindow": "last 7 days" },
+  "notify": { "slack": { "enabled": false, "webhookEnvVar": "LEDGER_SLACK_WEBHOOK", "events": ["digest"], "channel": "#project-updates" } },
   "mirror": { "adapter": "none" }
 }
 ```
@@ -60,8 +61,12 @@ The `mirror` block lives inside the project's sync map. The other top-level keys
   author-specific is baked into the skill.
 - `digest` is **optional**. `defaultWindow` is the `--since` used when `/ledger digest`
   is run with no window (falls back to `"last 7 days"` if absent). Digest is a
-  `full`-tier, on-demand mode — see `SKILL.md` → Mode: digest. (A future Slack notifier
-  will add its own `notify` block, kept separate from `digest`.)
+  `full`-tier, on-demand mode — see `SKILL.md` → Mode: digest.
+- `notify` is **optional** and **off by default**. It configures notifiers (Slack today)
+  that ping a channel on `digest` / `close` — separate from `mirror` (a notifier composes
+  with whatever adapter is set, it doesn't replace it). The secret (webhook URL) lives in
+  the env var named by `webhookEnvVar`, never here. Full contract + per-notifier procedure
+  in `notifiers/` (`notifiers/README.md`, `notifiers/slack.md`).
 - `mirror` selects the publish adapter (below).
 
 ## The `mirror` block

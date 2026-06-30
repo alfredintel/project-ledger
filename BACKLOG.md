@@ -47,7 +47,9 @@ The dogfood ran on the `none` adapter, so the publishing path is still entirely 
   the metadata header rendering, and the roadmap Jira-macro fallback. Never executed.
 - **Digest publish via `atlassian`** — the Project Digest parent + per-window children.
   Never executed.
-- **Slack notifier** — designed (`notify.slack`), not built.
+- **Slack notifier** — **built** (`notifiers/slack.md` + the `notify.slack` config), but
+  **unproven**: needs a real incoming-webhook URL in `LEDGER_SLACK_WEBHOOK` to confirm a
+  message actually posts and the fail-soft path behaves.
 
 **Trigger:** the "prove the mirror" milestone (needs a real Atlassian target + the MCP
-server in scope) and the "build Slack" milestone.
+server in scope), and a Slack webhook to prove the notifier end-to-end.

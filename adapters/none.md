@@ -11,6 +11,9 @@ The default. No external mirror. The files in the repo are the entire ledger.
 - **`digest`:** writes the local digest at `docs/digests/digest-<START>_to_<END>.md`
   and stops there — no Confluence page, no page tree. The local file is the digest.
 - **No metadata header, no page tree, no Jira issues.**
+- **Notifiers still fire.** `none` only means *no mirror*. If `notify.slack` is enabled,
+  `digest` / `close` still ping Slack (with the local path as the link) — notifiers are
+  independent of the adapter. See `notifiers/`.
 
 Use this for solo projects, greenfield work, anything not published to a shared
 workspace. Upgrade later by setting `mirror.adapter` to a publishing adapter and

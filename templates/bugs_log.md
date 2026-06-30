@@ -20,5 +20,5 @@
 
 ## Fixed (carried for the trail)
 
-### BUG-N — {{short title}} — FIXED (session NN)
+### BUG-N — {{short title}} — FIXED (session NN, {{DATE}})
 {{One line: the defect and what closed it. Link the fixing commit or the open-item ID.}}

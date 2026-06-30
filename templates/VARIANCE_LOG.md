@@ -18,7 +18,7 @@ distinct:
 
 ## Shipped / operational variances (`V-#`)
 
-### V-1 — {{short title}} (session NN)
+### V-1 — {{short title}} (session NN, {{DATE}})
 **What happened:** {{the surprise, the symptom}}.
 **Evidence gap:** {{what the plan/template assumed that turned out false}}.
 **Closed by:** {{the fix + where it's documented}}. **Severity:** {{...}}.
@@ -27,7 +27,7 @@ distinct:
 
 ## Documentation concerns (`VAR-#`)
 
-### VAR-1 — {{short title}}  · status: open
+### VAR-1 — {{short title}}  · status: open · logged {{DATE}}
 **What's written:** {{the claim as it currently reads}}.
 **What's actually true:** {{the real state}}.
 **Action needed:** {{what to do}}. Tracked as {{X-#}}. **Severity:** {{...}}.

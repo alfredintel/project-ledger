@@ -1,7 +1,10 @@
 <!-- Paste this block into the project README. It is the front door of the ledger.
      Keep only the rows whose artifact exists in this project's tier: minimal has
      Contract + Scoreboard + Work queue + this index; full has all rows below. Drop
-     any row whose file you didn't scaffold so the front door has no dead links. -->
+     any row whose file you didn't scaffold so the front door has no dead links.
+     For the closing line, keep ONLY the branch that matches mirror.adapter (the
+     local-only line for `none`, or the published-mirror line for a publishing adapter);
+     delete the other. -->
 
 ## Where are we? (project tracking)
 
@@ -18,7 +21,12 @@ This project runs on the **Project Ledger** discipline:
 - **Briefs** — [`docs/briefs/`](./docs/briefs/): per-session intent (`BRIEF-session-NN`) + outcome (`SESSION-NN-close-out`).
 - **Frame** — [`{{PREFIX}}-OVERVIEW.md`](./{{PREFIX}}-OVERVIEW.md): what we're building and why.
 
-Maintained with `/ledger` — `open` a session, `close` to reconcile (and, if a mirror
-adapter is configured, publish). Published mirror (when configured): Confluence space
-**{{SPACE}}** (hub + Contract + Build Status + Roadmap + Variance + Runbook + Testing +
-Bugs + Research + Session Log) · open items and bugs tracked in Jira project **{{JIRA}}**.
+Maintained with `/ledger` — `open` a session, `close` to reconcile (and publish if a
+mirror adapter is configured).
+
+<!-- Keep ONE of the two lines below (matching mirror.adapter); delete the other. -->
+*(adapter `none`)* This project is **local-only** — no mirror adapter configured; the
+files in this repo are the whole ledger.
+*(publishing adapter)* Published mirror: Confluence space **{{SPACE}}** (hub + Contract +
+Build Status + Roadmap + Variance + Runbook + Testing + Bugs + Research + Session Log) ·
+open items and bugs tracked in Jira project **{{JIRA}}**.

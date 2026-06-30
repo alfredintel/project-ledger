@@ -11,8 +11,10 @@
 
 ## Summary
 
-From {{SINCE}} to {{TO}}, the project shipped {{SHIPPED_COUNT}} features/capabilities
-and resolved {{RESOLVED_COUNT}} open items.
+From {{SINCE}} to {{TO}}, the project moved {{ADVANCED_COUNT}} capabilities forward —
+{{LIVE_COUNT}} reached **Live** (proven against the real target), {{CURRENT_COUNT}}
+advanced to **Current** (built, not yet proven) — and resolved {{RESOLVED_COUNT}} open
+items. (Honest framing: don't call Current work "shipped"; name what's actually proven.)
 
 **Key accomplishments:**
 - {{accomplishment 1 — drawn from a close-out, with evidence}}
@@ -29,11 +31,11 @@ learned, why work was deferred. Keep it honest; uncertain stays uncertain.}}
 
 ---
 
-## Shipped this window
+## Advanced this window
 
-| Item | Type | Session | Evidence / Notes |
-|---|---|---|---|
-| {{item or node}} | {{feature / bugfix / hardening}} | {{NN}} | {{one-liner: what proves it shipped}} |
+| Item | Type | Status | Session | Evidence / Notes |
+|---|---|---|---|---|
+| {{item or node}} | {{feature / bugfix / hardening}} | {{Live | Current}} | {{NN}} | {{what proves it (Live), or why it's still unproven (Current)}} |
 
 ---
 

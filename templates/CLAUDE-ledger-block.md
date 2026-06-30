@@ -1,9 +1,10 @@
-<!-- Paste this block into the project's agent-context file (CLAUDE.md / .claude/CLAUDE.md
-     / AGENTS.md). It points Claude Code at the Contract before any work. `/ledger
-     bootstrap` installs and updates it automatically — keep the section heading exactly
-     "## Project Ledger — rules of engagement" so re-runs update it in place instead of
-     duplicating. Do not paste the full Contract here; this is a pointer + the
-     load-bearing rules in brief. -->
+<!-- INSTALLER NOTE (do NOT copy this comment into the project file): the installable
+     content is everything from the "## Project Ledger — rules of engagement" heading
+     below, onward. This goes into the project's agent-context file (CLAUDE.md /
+     .claude/CLAUDE.md / AGENTS.md) to point Claude Code at the Contract before any work.
+     `/ledger bootstrap` installs and updates it automatically — keep the heading exact
+     so re-runs replace it in place instead of duplicating. Don't paste the full Contract;
+     this is a pointer + the load-bearing rules in brief. -->
 
 ## Project Ledger — rules of engagement
 

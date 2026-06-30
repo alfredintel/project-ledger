@@ -142,13 +142,18 @@ genuinely empty repo.
 4. **Wire the Contract into the agent-context file (both tiers).** So the rules of
    engagement are read at the start of work — not buried in the artifact docs — install
    the pointer block from `templates/CLAUDE-ledger-block.md`, rendering `{{PREFIX}}`:
+   - **Install only the section, not the template's instructions.** The installable
+     content is everything from the `## Project Ledger — rules of engagement` heading
+     onward. The leading `<!-- ... -->` instructional comment is guidance for *you*, the
+     installer — never copy it into the project's file.
    - **Detect the repo's convention.** Look for an existing agent-context file in this
      order: `CLAUDE.md` (repo root), `.claude/CLAUDE.md`, `AGENTS.md`. Use the first
      that exists.
-   - **If one exists,** append the rendered block — but **idempotently**: if a section
-     titled `## Project Ledger — rules of engagement` is already present, replace that
-     section in place; never duplicate it. Touch nothing else in the file.
-   - **If none exists,** create `CLAUDE.md` at the repo root containing the block.
+   - **If one exists,** append the rendered section — but **idempotently**: if a section
+     titled `## Project Ledger — rules of engagement` is already present, replace it in
+     place (from that heading to the next `##` heading or EOF); never duplicate it.
+     Touch nothing else in the file.
+   - **If none exists,** create `CLAUDE.md` at the repo root containing the section.
    - This is retrofit-safe: only add or update the ledger section, never clobber
      existing content.
 5. **Write `.ledger/ledger.json`** (schema in `adapters/README.md`) with config,
@@ -284,12 +289,16 @@ journal); on a `minimal`-tier project, say the journal is needed and stop.
    commit date). This map is the spine: close-outs, resolutions, variances, and
    `Live` nodes are all tagged `(session NN)`, so map each NN to a date and keep those
    whose date is in `[START, END]`.
-3. **Gather the window's data:**
+3. **Gather the window's data.** Filter by an entry's **own date** when it carries one,
+   else by the session→date map, else surface it rather than dropping it (see below):
    - **Close-outs** in window → the arc, evidence, and "what's next" for each.
    - **Resolved queue:** items in the `<PREFIX>_OPEN_ITEMS.md` "Resolved (carried for
      trail)" section whose `(session NN)` maps into the window.
-   - **Variance:** `V-#` / `VAR-#` in `<PREFIX>_VARIANCE_LOG.md` whose `(session NN)`
-     maps into the window.
+   - **Variance:** `V-#` / `VAR-#` in `<PREFIX>_VARIANCE_LOG.md` — entries carry a date
+     (`(session NN, YYYY-MM-DD)` or `logged YYYY-MM-DD`); keep those dated in `[START,
+     END]`. An entry with neither a date nor a resolvable session tag is **not silently
+     dropped** — list it under a "Undated — verify window" note in the digest.
+   - **Bugs:** `BUG-#` in `docs/bugs/bugs_log.md` Fixed in window (same date rule).
    - **Live nodes:** rows in `docs/<PREFIX>_BUILD_STATUS.md` flipped to `Live` whose
      `Session` column maps into the window.
    - **Pending:** current **Open** items + deferred work in the queue, each with its
@@ -301,12 +310,15 @@ journal); on a `minimal`-tier project, say the journal is needed and stop.
    summarizes.
 5. **Write the local digest** from `templates/DIGEST.md` to
    `docs/digests/digest-<START>_to_<END>.md` (create `docs/digests/` if absent). Fill:
-   - **Summary (prose):** "From `<START>` to `<END>`, the project shipped N
-     features/capabilities and resolved M open items. Key accomplishments: [3–5
-     bullets from close-outs]. Remaining priorities: [3–5 from open items with
-     triggers]." Add a sentence or two of honest narrative.
-   - **Shipped this window** table: `| Item | Type (feature/bugfix/hardening) | Session
-     | Evidence / Notes |`.
+   - **Summary (prose), honest framing:** "From `<START>` to `<END>`, the project moved
+     N capabilities forward — L reached **Live** (proven), C advanced to **Current**
+     (built, unproven) — and resolved M open items. Key accomplishments: [3–5 bullets
+     from close-outs]. Remaining priorities: [3–5 from open items with triggers]." Never
+     call Current/PARTIAL work "shipped"; separate what's proven Live from what's merely
+     built. Add a sentence or two of honest narrative.
+   - **Advanced this window** table: `| Item | Type | Status (Live/Current) | Session |
+     Evidence / Notes |` — Evidence says what proves Live, or why a Current item is still
+     unproven.
    - **Pending** table: `| Item | Type (work/question) | Trigger | Priority |`.
    - **Open questions & variance** list: the `OQ-#` / `VAR-#` / `V-#` logged in window.
    - If **no** sessions or resolved items fall in the window, do not emit empty tables:

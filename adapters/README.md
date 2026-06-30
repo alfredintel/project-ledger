@@ -48,7 +48,7 @@ The `mirror` block lives inside the project's sync map. The other top-level keys
   "session": 0,
   "statusVocab": ["Live", "Current", "Planned"],
   "commit": { "author": "<Name <email>>", "coauthor": "" },
-  "digest": { "defaultWindow": "last 7 days", "includeSummaryInSlack": false },
+  "digest": { "defaultWindow": "last 7 days" },
   "mirror": { "adapter": "none" }
 }
 ```
@@ -59,9 +59,9 @@ The `mirror` block lives inside the project's sync map. The other top-level keys
   uses the repo's own configured git identity and injects no co-author. Nothing
   author-specific is baked into the skill.
 - `digest` is **optional**. `defaultWindow` is the `--since` used when `/ledger digest`
-  is run with no window (falls back to `"last 7 days"` if absent).
-  `includeSummaryInSlack` is reserved for future use. Digest is a `full`-tier, on-demand
-  mode — see `SKILL.md` → Mode: digest.
+  is run with no window (falls back to `"last 7 days"` if absent). Digest is a
+  `full`-tier, on-demand mode — see `SKILL.md` → Mode: digest. (A future Slack notifier
+  will add its own `notify` block, kept separate from `digest`.)
 - `mirror` selects the publish adapter (below).
 
 ## The `mirror` block

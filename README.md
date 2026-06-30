@@ -5,9 +5,10 @@ lightweight project operating system that keeps "where are we" honest and, when 
 project opts in, mirrors its state one-way to a tracker like Confluence and Jira.
 
 This directory — `/Users/alin/Documents/PersonalCode/Skills/ledger` — is the
-**canonical home** and the standalone git repo for the skill. The live, installed copy
-at `~/.claude/skills/ledger/` is a symlink back here (see [Install](#install)), so edits
-in this directory are live immediately.
+**canonical home** and the standalone git repo. It's packaged as a **Claude Code plugin**:
+the skill itself lives in `skills/ledger/`, with the plugin + marketplace manifests in
+`.claude-plugin/`. Install it via `/plugin` (see [Install](#install)), or symlink
+`skills/ledger/` for live local development.
 
 ---
 
@@ -64,7 +65,7 @@ The files are just paper. These disciplines are what make it work:
 ## The artifacts
 
 The **Tier** column marks what `bootstrap` scaffolds: `both` = minimal and full tiers;
-`full` = full tier only. (See `reference/tiers.md`.)
+`full` = full tier only. (See `skills/ledger/reference/tiers.md`.)
 
 | Artifact | File | Job | Tier | Cadence |
 |---|---|---|---|---|
@@ -83,7 +84,7 @@ The **Tier** column marks what `bootstrap` scaffolds: `both` = minimal and full 
 | **Sync map** | `.ledger/ledger.json` | Config + tier + commit identity + mirror adapter + its IDs. The idempotency record. | both | every publish |
 
 `<PREFIX>` is the project's short slug in SCREAMING_CASE (e.g. `ADMIN`,
-`CONVMATCHENG`). Templates for every artifact live in `templates/`.
+`CONVMATCHENG`). Templates for every artifact live in `skills/ledger/templates/`.
 
 ---
 
@@ -137,7 +138,7 @@ the same everywhere; only the publish target changes.
 
 Idempotency comes from the committed sync map (`.ledger/ledger.json`), which holds each
 page's ID and each open item's key under `mirror`. First publish creates; every publish
-after updates by ID. No duplicates. Adapter contract + schema in `adapters/README.md`.
+after updates by ID. No duplicates. Adapter contract + schema in `skills/ledger/adapters/README.md`.
 
 When the `atlassian` adapter is configured, the Confluence tree under the hub is:
 Build Status · Roadmap & Open Items · Variance Log · Contract · Runbook · Testing
@@ -159,7 +160,7 @@ first: enable `notify.slack` in `.ledger/ledger.json` and it posts the `digest` 
 **composes** with any adapter — even `none` gets the ping (with the local path as the
 link). The webhook URL is read from an env var (`webhookEnvVar`, default
 `LEDGER_SLACK_WEBHOOK`), never committed; a missing webhook fails soft (the digest/close
-still completes). Off by default. Contract + procedure in `ledger/notifiers/`.
+still completes). Off by default. Contract + procedure in `skills/ledger/notifiers/`.
 
 **Capabilities & graceful degradation.** `mirror` and `notify` are independent on/off
 switches for the project's external functions. A project with no Confluence/Jira or Slack
@@ -172,63 +173,72 @@ written, only the external step is skipped and reported (`DONE_WITH_CONCERNS`).
 
 ## Repository layout
 
-This directory is the repo root (the canonical home of `/ledger`):
+The repo is a plugin: manifests at the root, the skill under `skills/ledger/`.
 
 ```
-ledger/                        ← the skill source (this repo)
-├── README.md                  ← you are here (project overview)
+project-ledger/                    ← repo root · plugin · marketplace
+├── README.md                      ← you are here (project overview)
+├── BACKLOG.md                     deferred items + known-unproven surfaces
 ├── .gitignore
-├── BACKLOG.md                 deferred items + known-unproven surfaces
-├── SKILL.md                   the skill entrypoint: dispatch + the seven modes
-├── reference/
-│   ├── concept.md             the methodology, in depth
-│   └── tiers.md               minimal vs full — what each scaffolds
-├── adapters/                  pluggable publish targets (the mirror)
-│   ├── README.md              the adapter contract + the ledger.json schema
-│   ├── none.md                local-only (the default)
-│   └── atlassian.md           Confluence + Jira publish procedure
-├── notifiers/                 pluggable channel pings (compose with the mirror)
-│   ├── README.md              the notifier contract + the notify schema
-│   └── slack.md               Slack incoming-webhook procedure
-└── templates/                 one per artifact + the README / CLAUDE blocks
-    ├── CONTRACT.md
-    ├── CLAUDE-ledger-block.md
-    ├── FRAME.md
-    ├── BUILD_STATUS.md
-    ├── OPEN_ITEMS.md
-    ├── VARIANCE_LOG.md
-    ├── bugs_log.md
-    ├── deploy_runbook.md
-    ├── testing_procedure.md
-    ├── research-index.md
-    ├── DIGEST.md
-    ├── BRIEF-session.md
-    ├── SESSION-close-out.md
-    └── README-index.md
+├── .claude-plugin/
+│   ├── plugin.json                plugin manifest (name: project-ledger; no pinned version)
+│   └── marketplace.json           marketplace (alfredintel-skills) → this same repo
+└── skills/
+    └── ledger/                    ← the skill, invoked /ledger
+        ├── SKILL.md               the entrypoint: dispatch + the seven modes
+        ├── reference/
+        │   ├── concept.md         the methodology, in depth
+        │   └── tiers.md           minimal vs full — what each scaffolds
+        ├── adapters/              pluggable publish targets (the mirror)
+        │   ├── README.md          the adapter contract + the ledger.json schema
+        │   ├── none.md            local-only (the default)
+        │   └── atlassian.md       Confluence + Jira publish procedure
+        ├── notifiers/             pluggable channel pings (compose with the mirror)
+        │   ├── README.md          the notifier contract + the notify schema
+        │   └── slack.md           Slack incoming-webhook procedure
+        └── templates/             one per artifact + the README / CLAUDE blocks
+            ├── CONTRACT.md
+            ├── CLAUDE-ledger-block.md
+            ├── FRAME.md
+            ├── BUILD_STATUS.md
+            ├── OPEN_ITEMS.md
+            ├── VARIANCE_LOG.md
+            ├── bugs_log.md
+            ├── deploy_runbook.md
+            ├── testing_procedure.md
+            ├── research-index.md
+            ├── DIGEST.md
+            ├── BRIEF-session.md
+            ├── SESSION-close-out.md
+            └── README-index.md
 ```
 
 ---
 
 ## Install
 
-The skill must live under `~/.claude/skills/` to be discoverable by Claude Code.
-Symlink once so this repo stays the single source of truth (recommended), or copy on
-each change:
+**As a plugin (recommended — one command, auto-updating):**
 
-```bash
-# Symlink (recommended — edits in this repo are live immediately).
-# Canonical home → install target:
-ln -sfn /Users/alin/Documents/PersonalCode/Skills/ledger ~/.claude/skills/ledger
-
-# — or — copy (manual re-install after each change), run from this repo root:
-cp -R ./. ~/.claude/skills/ledger/
+```
+/plugin marketplace add alfredintel/project-ledger
+/plugin install project-ledger@alfredintel-skills
 ```
 
-Then, in any repo: `/ledger analyze` to preview safely (read-only), or `/ledger bootstrap`
-to start tracking — bootstrap analyzes and asks for approval before it writes anything.
+The marketplace is this same repo, and the plugin pins no `version`, so every push to
+`main` is picked up as an update (`/plugin update`).
 
-> Note: Claude Code discovers skills at session start, so after first installing the
-> symlink, start a fresh session for `/ledger` to appear.
+**For local development** (edits live immediately), symlink the skill directory instead:
+
+```bash
+ln -sfn /Users/alin/Documents/PersonalCode/Skills/ledger/skills/ledger ~/.claude/skills/ledger
+```
+
+Either way, in any repo: `/ledger analyze` to preview safely (read-only), or
+`/ledger bootstrap` to start tracking — bootstrap analyzes and asks for approval before it
+writes anything.
+
+> Note: Claude Code discovers skills/plugins at session start, so after first installing,
+> start a fresh session for `/ledger` to appear.
 
 ---
 
@@ -250,9 +260,10 @@ Honest status, in the skill's own terms — built (Current) vs proven (Live):
   proven), and `analyze` on a real project. All tracked in `BACKLOG.md`.
 - **Not yet adopted:** never bootstrapped on a real project — adoption is deliberately
   gated behind `analyze` so it can't disrupt an in-flight roadmap.
-- **Repo + install:** standalone git repo at `/Users/alin/Documents/PersonalCode/Skills/ledger`,
-  installed live via a symlink at `~/.claude/skills/ledger`.
-- **Next build:** package as a plugin + marketplace so it installs via `/plugin install`
-  rather than a manual symlink.
+- **Distribution:** packaged as a Claude Code **plugin** (skill in `skills/ledger/`,
+  manifests in `.claude-plugin/`); installs via `/plugin install project-ledger@alfredintel-skills`,
+  or a dev symlink to `skills/ledger/`. No pinned version → pushes auto-update installers.
+- **Next:** *prove* the publish path (atlassian mirror, real Slack POST) and *adopt* on a
+  real project — both need your environment, not more building.
 - **Provenance:** extracted 2026-06-12 from the tracking discipline of two internal
   projects that independently arrived at the same shape.

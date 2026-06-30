@@ -1,0 +1,11 @@
+{
+  "name": "alfredintel-skills",
+  "owner": { "name": "Ali N" },
+  "plugins": [
+    {
+      "name": "project-ledger",
+      "source": ".",
+      "description": "Project Ledger (/ledger) — honest project tracking with optional Confluence/Jira mirror + Slack notifier. Local-only by default."
+    }
+  ]
+}

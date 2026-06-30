@@ -1,0 +1,8 @@
+{
+  "name": "project-ledger",
+  "description": "Project Ledger — a project operating system: a governance Contract, a status-honest scoreboard, a triggered work queue, paired session cadence (brief + close-out), runbook/testing/bugs/research artifacts, on-demand stakeholder digests, and analysis-first adoption — with an optional one-way mirror to Confluence + Jira and a Slack notifier via per-project adapters. Local-only by default.",
+  "author": { "name": "Ali N" },
+  "homepage": "https://github.com/alfredintel/project-ledger",
+  "repository": "https://github.com/alfredintel/project-ledger",
+  "keywords": ["project-management", "tracking", "ledger", "status", "confluence", "jira", "slack", "claude-code"]
+}

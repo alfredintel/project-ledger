@@ -42,7 +42,8 @@ The files are just paper. These disciplines are what make it work:
   spectrum — *proven-live → built-but-unproven → planned → speculative*. The exact
   words flex per project (`Live / Current / Planned` for deployed software;
   `Current / Built-mock / Planned / Research` for greenfield). Uncertain is marked
-  uncertain, never optimistic.
+  uncertain, never optimistic — and every `/ledger` run ends with a one-line 🟢/🟡/🔴
+  status signal, the same honesty at a glance.
 - **Paired session cadence.** Work happens in sessions. Each **opens** with a brief
   (one bounded goal, intent before code) and **closes** with a close-out
   (disposition, evidence, what's next). The close-out reconciles the canonical files
@@ -98,8 +99,10 @@ open  →  BRIEF-session-NN (bounded goal, eyeball pass)
 close →  SESSION-NN-close-out (disposition + evidence + next)
           │  reconcile: scoreboard · queue · variance · bugs
           ▼
-publish →  via the mirror adapter (none = local-only, the default;
-           atlassian = Confluence hub + children + Jira issues)
+publish →  via the mirror adapter (none = local-only default; atlassian = Confluence + Jira)
+          │  + optional Slack ping (notify.slack)
+          ▼
+        🟢/🟡/🔴 status signal
 ```
 
 ---
@@ -114,7 +117,7 @@ publish →  via the mirror adapter (none = local-only, the default;
 | `close [session]` | The heavy mode. Write the close-out, reconcile the canonical files (scoreboard, queue, variance log, and — full tier — bugs log), then publish via the configured adapter. Files first (source of truth), publish second. |
 | `status` | Answer "where are we" in seconds from the scoreboard. Flags drift if the scoreboard is staler than the latest close-out. Also reports **capabilities** — mirror / Slack as `on` / `off` / `unavailable`. |
 | `sync` | Force a re-publish through the configured mirror adapter from current file state, no close-out (use after hand-edits or right after bootstrap). |
-| `digest [--since <when>] [--to <when>]` | Generate a digest of what shipped and what's pending over a time window (default: last 7 days). Pulls from session close-outs and the resolved queue. Writes `docs/digests/` and publishes a Confluence page under the hub. On demand — never auto-runs on close. |
+| `digest [--since <when>] [--to <when>]` | Generate a digest of what shipped and what's pending over a time window (default: last 7 days). Pulls from session close-outs and the resolved queue. Writes `docs/digests/` (local-first) and, if a publishing adapter is set, mirrors a page under the hub; can also ping Slack. On demand — never auto-runs on close. |
 
 ---
 
@@ -176,7 +179,7 @@ ledger/                        ← the skill source (this repo)
 ├── README.md                  ← you are here (project overview)
 ├── .gitignore
 ├── BACKLOG.md                 deferred items + known-unproven surfaces
-├── SKILL.md                   the skill entrypoint: dispatch + the six modes
+├── SKILL.md                   the skill entrypoint: dispatch + the seven modes
 ├── reference/
 │   ├── concept.md             the methodology, in depth
 │   └── tiers.md               minimal vs full — what each scaffolds
@@ -221,18 +224,35 @@ ln -sfn /Users/alin/Documents/PersonalCode/Skills/ledger ~/.claude/skills/ledger
 cp -R ./. ~/.claude/skills/ledger/
 ```
 
-Then `/ledger bootstrap` in any repo to start tracking.
+Then, in any repo: `/ledger analyze` to preview safely (read-only), or `/ledger bootstrap`
+to start tracking — bootstrap analyzes and asks for approval before it writes anything.
+
+> Note: Claude Code discovers skills at session start, so after first installing the
+> symlink, start a fresh session for `/ledger` to appear.
 
 ---
 
 ## Status
 
-- **Skill:** working — `bootstrap`, `open`, `close`, `status`, `sync` implemented,
-  with pluggable mirror adapters (`none` / `atlassian`), minimal/full tiers, a
-  governance **Contract**, and runbook / testing / bugs / research artifacts.
-- **Repo:** standalone git repo at `/Users/alin/Documents/PersonalCode/Skills/ledger`,
+Honest status, in the skill's own terms — built (Current) vs proven (Live):
+
+- **Skill:** all seven modes implemented — `analyze`, `bootstrap`, `open`, `close`,
+  `status`, `sync`, `digest` — with pluggable mirror adapters (`none` / `atlassian`), a
+  Slack notifier, minimal/full tiers, a six-rule governance **Contract** (including
+  ground-in-current-docs and opt-in autonomy), a 🟢/🟡/🔴 status-signal convention,
+  capabilities + graceful degradation, and runbook / testing / bugs / research / digest
+  artifacts.
+- **Proven (Live):** the local core — `bootstrap → open → close → digest` on the `none`
+  adapter — is dogfood-proven end-to-end on a throwaway repo; the five bugs that surfaced
+  (B1–B5) are fixed.
+- **Built but unproven:** the `atlassian` mirror (never run against a real Confluence /
+  Jira), the real Slack POST (needs a webhook — message format + fail-soft are dry-run
+  proven), and `analyze` on a real project. All tracked in `BACKLOG.md`.
+- **Not yet adopted:** never bootstrapped on a real project — adoption is deliberately
+  gated behind `analyze` so it can't disrupt an in-flight roadmap.
+- **Repo + install:** standalone git repo at `/Users/alin/Documents/PersonalCode/Skills/ledger`,
   installed live via a symlink at `~/.claude/skills/ledger`.
-- **First real deployment:** an internal project, bootstrapped on the `atlassian`
-  adapter (mirror block wired, artifacts adopted); first publish pending.
+- **Next build:** package as a plugin + marketplace so it installs via `/plugin install`
+  rather than a manual symlink.
 - **Provenance:** extracted 2026-06-12 from the tracking discipline of two internal
   projects that independently arrived at the same shape.

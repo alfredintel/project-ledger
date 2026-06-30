@@ -20,6 +20,7 @@ the session that touched it, and what's next.
 | **Live** | Deployed and verified against the real target |
 | **Current** | Built + tested, in the repo, not necessarily exercised in prod |
 | **Planned** | On the roadmap, designed or partially designed, not built |
+| **Superseded** | Replaced by another node; kept briefly for the trail, points to its replacement |
 {{add Built-mock / Research rows if the project uses them}}
 
 ---
@@ -65,4 +66,6 @@ framed as hardening vs new capability where that's the truth.}}
 Update this file when a node changes status, when something is deployed/verified, or
 when a new capability lands. Keep `Live` honest — it means *proven against the real
 target*, not merely committed. If a node's status is uncertain, mark it uncertain
-rather than optimistic.
+rather than optimistic. When a node is **replaced**, mark the old one `Superseded` with a
+pointer to its replacement instead of deleting it silently; drop it once the replacement
+is `Live`.

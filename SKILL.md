@@ -124,8 +124,11 @@ preview safely without committing to anything.
    - **Agent-context:** `CLAUDE.md` / `.claude/CLAUDE.md` / `AGENTS.md`.
    - **Shape + in-flight state:** README, source layout, `git log --oneline -30`, active
      branches, open PRs/issues — so the draft scoreboard reflects "mid-flight" honestly.
-2. **Infer config (proposed, not applied):** `<PREFIX>`, tier, status vocabulary, and a
-   suggested mirror adapter — each with the evidence that suggests it.
+2. **Infer config (proposed, not applied):** `<PREFIX>`, tier, status vocabulary
+   (default `Live / Current / Planned` — `Live` is a valid *future* state even before
+   first deploy; reserve `Current / Built-mock / Planned / Research` for exploratory work
+   with no intended deploy target), and a suggested mirror adapter — each with the
+   evidence that suggests it.
 3. **Build the adoption map.** Classify how adoption would treat each artifact / existing
    file — and **default to ADOPT/LEAVE over CREATE** when anything already plays the role:
    - **ADOPT** — an existing file already fills this role; the ledger *maps onto it*,
@@ -168,8 +171,11 @@ no writes). This is what makes it safe to adopt on a project that's already in m
 
 1. **Lock the approved config** from the analysis/gate: `<PREFIX>`, **tier**, **status
    vocabulary**, and **mirror adapter** — all proposed in Mode: analyze and approved in
-   step 0 (vocab: deployed software `Live / Current / Planned`; greenfield
-   `Current / Built-mock / Planned / Research`). Only if a publishing adapter was chosen,
+   step 0. Vocab default is `Live / Current / Planned` for anything with or intending a
+   real deploy target (`Live` is a valid *future* state even before first deploy);
+   reserve `Current / Built-mock / Planned / Research` for exploratory work with no
+   deploy target. Don't force a rigid deployed-vs-greenfield binary. Only if a publishing
+   adapter was chosen,
    resolve that adapter's target from the repo's `CLAUDE.md` and nearest parent (for
    `atlassian`: site, Confluence space, Jira project, Vertical, MCP server) — read
    CLAUDE.md, never hardcode.
@@ -204,12 +210,16 @@ no writes). This is what makes it safe to adopt on a project that's already in m
    - **If none exists,** create `CLAUDE.md` at the repo root containing the section.
    - This is retrofit-safe: only add or update the ledger section, never clobber
      existing content.
-5. **Write `.ledger/ledger.json`** (schema in `adapters/README.md`) with config,
-   `tier`, `session: 0`, an optional `commit` block (`author` / `coauthor` — omit to
-   use the repo's own git identity with no injected co-author), and the chosen `mirror`
-   block — `{ "adapter": "none" }`, or the `atlassian` block with empty
-   `confluence`/`jira` ID maps (the `confluence` map has a key per page — see
-   `adapters/atlassian.md`).
+5. **Write `.ledger/ledger.json`** with the **full schema** (in `adapters/README.md`), so
+   every switch is discoverable in the file rather than hidden in the docs: `project` /
+   `prefix` / `slug`, `tier`, `session: 0`, `statusVocab`, an optional `commit` block
+   (`author` / `coauthor` — omit to use the repo's own git identity with no injected
+   co-author), a `digest` block (`{ "defaultWindow": "last 7 days" }`), a `notify` block
+   (`{ "slack": { "enabled": false, "webhookEnvVar": "LEDGER_SLACK_WEBHOOK", "events":
+   ["digest"], "channel": "" } }` — seeded **off** so the operator can see and flip it),
+   and the chosen `mirror` block (`{ "adapter": "none" }`, or the `atlassian` block with
+   empty `confluence`/`jira` ID maps — the `confluence` map has a key per page, see
+   `adapters/atlassian.md`). Seed the optional blocks even when off.
 6. **Do not publish on bootstrap.** Tell the user to review the seeded scoreboard,
    then run `/ledger sync` (or open+close the first session) to publish.
 7. Commit per the project's `commit` config — `commit.author` / optional
@@ -258,7 +268,9 @@ this mode, `NN` = `session + 1` (the session being closed).
 2. **Reconcile the scoreboard** (`docs/<PREFIX>_BUILD_STATUS.md`): flip any node
    whose status changed, update the session column, refresh the **live operational
    state** block, bump "Last updated". Keep `Live` honest — it means proven against
-   the real target, not merely committed.
+   the real target, not merely committed. When a node is **replaced** by another, mark
+   the old one **`Superseded`** with a pointer to its replacement rather than deleting it
+   silently; drop it from the board once the replacement is `Live`.
 3. **Reconcile the queue** (`<PREFIX>_OPEN_ITEMS.md`): add new open items with
    stable IDs and triggers; move resolved items to the **Resolved (carried for
    trail)** section keeping their ID + a one-line resolution. Never recycle an ID.

@@ -2,8 +2,9 @@
 
 Deferred items surfaced by the **2026-06-29 dogfood** (a throwaway `linkstash` run:
 `bootstrap → autonomous session → close → digest` on the `none` adapter). The five
-real bugs it found (B1–B5) were fixed the same day; these four are the lower-priority
-remainder, plus the surfaces the `none`-adapter run could not exercise.
+real bugs it found (B1–B5) were fixed the same day, and B8–B9 (plus seeding the full config schema) in a
+2026-06-30 polish pass; B6–B7 remain open, plus the surfaces the `none`-adapter run
+could not exercise.
 
 Written in the ledger's own open-items style (`ID · severity · trigger`).
 
@@ -25,17 +26,23 @@ only exercisable on that weekday; the dogfood ran on a Monday.
 **Trigger:** a Friday run, or add a worked example to the digest window-resolve step and
 have it echo the resolved dates for the operator to sanity-check.
 
-### B8 — Status-vocab binary doesn't fit "pre-deploy but will deploy" · severity: low
-`bootstrap` forces deployed→`Live/Current/Planned` vs greenfield→`Current/Built-mock/
-Planned/Research`. A greenfield project that intends to deploy still wants `Live` as a
-future state (the dogfood overrode the binary by hand).
-**Trigger:** next revision of the bootstrap config step — offer `Live/Current/Planned`
-to any deploy-intending project regardless of greenfield status.
+---
 
-### B9 — No convention for superseded nodes · severity: low
-When a node is replaced (the dogfood swapped an in-memory store for SQLite), the
-scoreboard has no convention for the retired node — drop it, or mark it `superseded`?
-**Trigger:** when a real project replaces a capability and the scoreboard reads ambiguous.
+## Resolved (carried for the trail)
+
+### B8 — Status-vocab binary — RESOLVED (2026-06-30, polish pass)
+Bootstrap and analyze no longer force a deployed-vs-greenfield binary: vocab defaults to
+`Live / Current / Planned` for anything with or intending a deploy target (`Live` is a
+valid *future* state pre-deploy); the research vocab is reserved for exploratory work.
+
+### B9 — Superseded-node convention — RESOLVED (2026-06-30, polish pass)
+Added a `Superseded` status to the scoreboard legend + a maintenance rule: a replaced node
+is marked `Superseded` with a pointer to its replacement, dropped once the replacement is
+`Live`. (`templates/BUILD_STATUS.md` + the close reconcile step.)
+
+### Seed the full config schema — RESOLVED (2026-06-30, polish pass)
+Bootstrap now writes the complete `.ledger/ledger.json` (including `digest` and `notify`
+seeded **off**), so every capability switch is discoverable in the file, not just in docs.
 
 ---
 

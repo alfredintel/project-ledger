@@ -91,7 +91,9 @@ inside code spans. Same variables, two render-safe contexts — substitute both.
 
 Parse the user's input after `/ledger`:
 
-- `bootstrap` (or "start a ledger", "set up tracking") → **Mode: bootstrap**
+- `analyze` (or "what does this project have", "is it safe to adopt", `bootstrap
+  --dry-run`) → **Mode: analyze** (read-only; writes nothing)
+- `bootstrap [--dry-run]` (or "start a ledger", "set up tracking") → **Mode: bootstrap**
 - `open <session name> [--autonomous]` (or "open a session") → **Mode: open**
 - `close [session]` (or "close the session", "close-out") → **Mode: close**
 - `status` / nothing / "where are we" → **Mode: status**
@@ -100,7 +102,48 @@ Parse the user's input after `/ledger`:
   "what shipped this week") → **Mode: digest**
 
 If the repo has no `.ledger/ledger.json` and the mode is anything other than
-`bootstrap`, say so and offer to bootstrap first.
+`bootstrap` or `analyze`, say so and offer to `analyze` (read-only) or `bootstrap` first.
+
+---
+
+## Mode: analyze
+
+**Read-only. Writes nothing, commits nothing.** Survey what the project already has and
+produce an **Adoption Analysis**, so adopting the ledger on a project that's mid-flight
+maps onto its existing roadmap instead of disrupting it. `bootstrap` runs this first and
+gates on it; run it standalone (`/ledger analyze`, or `/ledger bootstrap --dry-run`) to
+preview safely without committing to anything.
+
+1. **Survey everything that defines the project's roadmap and state:**
+   - **Planning / roadmap:** `ROADMAP*`, `PLAN*`, `PLANNING*`, `TODO*`, `BACKLOG*`,
+     `MILESTONE*`, `CHANGELOG*`, any `*_STATUS` / `*_PROGRESS` docs, and the `docs/` tree.
+   - **Existing tracker state:** if a remote exists, read-only `gh issue list`,
+     `gh api repos/<o>/<r>/milestones`, project boards (or the GitLab equivalents).
+   - **Existing ledger-ish files (retrofit):** `*_BUILD_STATUS.md`, `*_OPEN_ITEMS.md`,
+     `*_VARIANCE_LOG.md`, `docs/briefs/`, a `.ledger/`.
+   - **Agent-context:** `CLAUDE.md` / `.claude/CLAUDE.md` / `AGENTS.md`.
+   - **Shape + in-flight state:** README, source layout, `git log --oneline -30`, active
+     branches, open PRs/issues — so the draft scoreboard reflects "mid-flight" honestly.
+2. **Infer config (proposed, not applied):** `<PREFIX>`, tier, status vocabulary, and a
+   suggested mirror adapter — each with the evidence that suggests it.
+3. **Build the adoption map.** Classify how adoption would treat each artifact / existing
+   file — and **default to ADOPT/LEAVE over CREATE** when anything already plays the role:
+   - **ADOPT** — an existing file already fills this role; the ledger *maps onto it*,
+     never replaces it (an existing `ROADMAP.md` becomes the Frame's source; an existing
+     status doc becomes the scoreboard; GitHub milestones map to the queue).
+   - **CREATE** — no equivalent exists; the ledger would scaffold it new.
+   - **CONFLICT** — an existing file overlaps but diverges from what the ledger would
+     write; flagged for a decision, **never auto-resolved**.
+   - **LEAVE** — project files the ledger won't touch.
+4. **Seed a DRAFT scoreboard** from the existing roadmap + code/commit state — honest
+   status per node (built vs planned vs in-flight). For review only.
+5. **Surface risks to the in-flight roadmap explicitly:** anything adoption could
+   duplicate, contradict, reorder, or obscure (e.g. "milestones already live in GitHub —
+   the queue would mirror, not replace them; confirm the mapping before adopting").
+6. **Output the Adoption Analysis** — proposed config · the adoption map
+   (ADOPT/CREATE/CONFLICT/LEAVE per item) · the draft scoreboard · risks · and exactly
+   what `bootstrap` would write, with an explicit statement that it overwrites nothing.
+   **Write nothing to disk.**
 
 ---
 
@@ -110,28 +153,33 @@ Stand up the ledger in a repo that doesn't have one, **seeded from real state** 
 read the code, the README, and `git log` so the first scoreboard reflects what's
 actually built. Never emit empty templates.
 
-**Retrofit first — detect existing artifacts.** Many repos already keep some of these
-files by hand (a `*_BUILD_STATUS.md`, an `*_OPEN_ITEMS.md`, a `docs/briefs/`). Glob
-for them before writing anything. If they exist, **do not overwrite** — adopt them:
-infer `<PREFIX>` from their names, map them to the artifact roles, write only what's
-missing, then write `.ledger/ledger.json` and **stop before publishing** (same as
-step 5 — review first, then `/ledger sync`). Creating a fresh scaffold is only for a
-genuinely empty repo.
+**Analysis-first and gated — never disrupt an in-flight project.** Bootstrap begins by
+running **Mode: analyze** and presenting the Adoption Analysis. It then **stops for your
+explicit approval before writing anything** — nothing is created, and no existing file is
+ever overwritten, until you OK the plan. On `--dry-run`, stop after the analysis (no gate,
+no writes). This is what makes it safe to adopt on a project that's already in motion.
 
-1. **Resolve config.** Pick the `<PREFIX>` slug, the **tier** (`minimal` or `full` —
-   see `reference/tiers.md`), the **status vocabulary** (deployed software:
-   `Live / Current / Planned`; greenfield: `Current / Built-mock / Planned /
-   Research`), and the **mirror adapter** (`none` by default; `atlassian` for repos
-   that publish to a shared tracker — see `adapters/`). Only if a publishing adapter
-   is chosen, read this repo's `CLAUDE.md` and nearest parent for that adapter's
-   target (for `atlassian`: site, Confluence space, Jira project, Vertical, MCP
-   server) — read CLAUDE.md, never hardcode. Confirm prefix, tier, vocabulary, and
-   adapter with one AskUserQuestion if any is ambiguous.
-2. **Survey the repo.** `git log --oneline -30`, read the README and top-level
-   source layout, list existing docs. Identify the real nodes (capabilities) and
-   their honest status.
-3. **Write the artifacts** from `templates/`, filled with real state (tier decides
-   which — see `reference/tiers.md`):
+0. **Analyze + confirm (gate).** Run **Mode: analyze**. Present the Adoption Analysis.
+   Resolve every **CONFLICT** and roadmap risk *with the operator first* — never
+   auto-resolve. Then get explicit approval via one AskUserQuestion ("adopt as planned /
+   adjust / cancel") before any write. On `--dry-run`, stop here. Existing files that the
+   map marked **ADOPT** or **LEAVE** are never overwritten — only **CREATE** items are
+   written, plus the agent-context pointer (idempotent) and `.ledger/ledger.json`.
+
+1. **Lock the approved config** from the analysis/gate: `<PREFIX>`, **tier**, **status
+   vocabulary**, and **mirror adapter** — all proposed in Mode: analyze and approved in
+   step 0 (vocab: deployed software `Live / Current / Planned`; greenfield
+   `Current / Built-mock / Planned / Research`). Only if a publishing adapter was chosen,
+   resolve that adapter's target from the repo's `CLAUDE.md` and nearest parent (for
+   `atlassian`: site, Confluence space, Jira project, Vertical, MCP server) — read
+   CLAUDE.md, never hardcode.
+2. **Carry forward the adoption map + DRAFT scoreboard** from the analysis — the real
+   nodes (capabilities) and their honest, mid-flight status are already identified there.
+   Don't re-survey from scratch; reconcile only what changed since the analysis ran.
+3. **Write only the CREATE items** from `templates/`, filled with real state (tier decides
+   which — see `reference/tiers.md`); **ADOPT** existing files in place (record the mapping
+   in `.ledger/ledger.json`, never rewrite them); **LEAVE** everything else untouched. The
+   full set, by tier:
    - **Both tiers:** `<PREFIX>-CONTRACT.md` (from `templates/CONTRACT.md`),
      `docs/<PREFIX>_BUILD_STATUS.md`, `<PREFIX>_OPEN_ITEMS.md`, and the "Where are we?"
      block (`templates/README-index.md`) in `README.md`.

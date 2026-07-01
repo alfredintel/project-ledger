@@ -1,11 +1,11 @@
 {
   "name": "alfredintel-skills",
-  "owner": { "name": "Ali N" },
+  "owner": { "name": "Alfred Intel", "url": "https://alfredintel.com" },
   "plugins": [
     {
       "name": "project-ledger",
       "source": ".",
-      "description": "Project Ledger (/ledger) — honest project tracking with optional Confluence/Jira mirror + Slack notifier. Local-only by default."
+      "description": "Project Ledger (/ledger) — honest project tracking with optional Confluence/Jira mirror + Slack notifier. Local-only by default. Built by Alfred Intel."
     }
   ]
 }

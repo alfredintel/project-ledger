@@ -71,6 +71,32 @@ was created for. To target a channel dynamically, post via a connected Slack MCP
 send-message tool to `notify.slack.channel` instead of the webhook — same message, same
 fail-soft rule.
 
+## Multiple projects & channels
+
+One incoming webhook posts to exactly **one channel**, fixed when it's created — so a new
+project channel needs a **new webhook, not a new Slack app**. A single app holds many
+webhooks:
+
+1. Create the channel in Slack.
+2. api.slack.com/apps → your app → **Incoming Webhooks** → **Add New Webhook to Workspace**
+   → pick the channel → copy the URL.
+3. Give each project a **distinct** `webhookEnvVar` so several ledgers on one machine don't
+   collide (e.g. `LEDGER_SLACK_WEBHOOK_<PROJECT>`), and export the matching URL.
+   `notify.slack.channel` is only a human label — the webhook URL is what routes.
+
+**Scaling past a handful of projects — switch to a bot token.** Instead of one webhook per
+channel, use a Slack app with a `chat:write` bot token (or a connected Slack MCP server):
+one token, unlimited channels, and `notify.slack.channel` becomes the real target (routed
+dynamically, not fixed at creation). The bot must be invited to each channel
+(`/invite @<app>`). Same message, same fail-soft rule.
+
+| | Incoming webhook (default) | Bot token / MCP |
+|---|---|---|
+| Per new project | add a webhook + set its env var | `/invite` the bot to the channel |
+| Secrets to manage | one URL per project | one token total |
+| Channel routing | fixed at creation | dynamic via `notify.slack.channel` |
+| Best for | 1–5 projects | many projects |
+
 ## Idempotency
 
 None — re-running a `digest` or `close` re-posts. Expected for a notifier (a stream, not a

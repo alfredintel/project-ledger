@@ -50,6 +50,7 @@ The `mirror` block lives inside the project's sync map. The other top-level keys
   "commit": { "author": "<Name <email>>", "coauthor": "" },
   "digest": { "defaultWindow": "last 7 days" },
   "notify": { "slack": { "enabled": false, "webhookEnvVar": "LEDGER_SLACK_WEBHOOK", "events": ["digest"], "channel": "#project-updates" } },
+  "autonomy": { "usageGuard": { "enabled": true, "threshold": 0.95, "check": "npx -y ccusage@latest blocks --active --json" } },
   "mirror": { "adapter": "none" }
 }
 ```
@@ -67,6 +68,14 @@ The `mirror` block lives inside the project's sync map. The other top-level keys
   with whatever adapter is set, it doesn't replace it). The secret (webhook URL) lives in
   the env var named by `webhookEnvVar`, never here. Full contract + per-notifier procedure
   in `notifiers/` (`notifiers/README.md`, `notifiers/slack.md`).
+- `autonomy` is **optional** and **full-tier**. `usageGuard` self-throttles *autonomous*
+  sessions against the host's usage limits: at/above `threshold` (0–1, default `0.95`) of
+  the active 5-hour or weekly window it stops cleanly with a **PARTIAL** close-out rather
+  than getting cut off mid-arc, then schedules a resume. `check` is the command that
+  reports usage (default `npx -y ccusage@latest blocks --active --json`). Seeded **on**
+  but **fail-soft** — if `check` is missing or errors it can't verify usage, so it warns,
+  reports `DONE_WITH_CONCERNS`, and proceeds. Interactive sessions ignore it. See
+  `SKILL.md` → **Autonomous usage guard**.
 - `mirror` selects the publish adapter (below).
 
 `mirror` and `notify` are the project's **capability switches** for its external functions.

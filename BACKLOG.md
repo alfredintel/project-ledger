@@ -57,6 +57,12 @@ The dogfood ran on the `none` adapter, so the publishing path is still entirely 
 - **Slack notifier** — **built** (`notifiers/slack.md` + the `notify.slack` config), but
   **unproven**: needs a real incoming-webhook URL in `LEDGER_SLACK_WEBHOOK` to confirm a
   message actually posts and the fail-soft path behaves.
+- **Autonomous usage guard** — **built** (`autonomy.usageGuard` config + SKILL.md →
+  *Autonomous usage guard*), but **unproven**: needs an autonomous session run near a real
+  5-hour / weekly cap to confirm it checks usage, stops with a clean **PARTIAL** close-out
+  instead of a mid-arc cutoff, and resumes on window-clear — plus the fail-soft path when
+  `ccusage` is absent. **Trigger:** the first real `/ledger open --autonomous` arc long
+  enough to approach a cap.
 
 **Trigger:** the "prove the mirror" milestone (needs a real Atlassian target + the MCP
 server in scope), and a Slack webhook to prove the notifier end-to-end.

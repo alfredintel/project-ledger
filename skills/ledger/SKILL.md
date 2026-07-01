@@ -218,6 +218,9 @@ no writes). This is what makes it safe to adopt on a project that's already in m
    co-author), a `digest` block (`{ "defaultWindow": "last 7 days" }`), a `notify` block
    (`{ "slack": { "enabled": false, "webhookEnvVar": "LEDGER_SLACK_WEBHOOK", "events":
    ["digest"], "channel": "" } }` — seeded **off** so the operator can see and flip it),
+   a full-tier `autonomy` block (`{ "usageGuard": { "enabled": true, "threshold": 0.95,
+   "check": "npx -y ccusage@latest blocks --active --json" } }` — seeded **on** but
+   fail-soft; guards autonomous sessions against usage caps),
    and the chosen `mirror` block (`{ "adapter": "none" }`, or the `atlassian` block with
    empty `confluence`/`jira` ID maps — the `confluence` map has a key per page, see
    `adapters/atlassian.md`). Seed the optional blocks even when off.
@@ -244,12 +247,44 @@ Begin a session with a brief — intent before code.
    assumptions the agent may proceed on, per Contract rule 6 — default stop on
    uncertainty is lifted for *ordinary* ambiguity only; the destructive floor (rule 2)
    and honest status (rule 5) still bind, and mid-session ambiguity becomes a logged
-   `OQ-#`, never a silent guess.
+   `OQ-#`, never a silent guess. The work then self-throttles against host usage limits —
+   see **Autonomous usage guard**.
 4. Show the brief to the user for an eyeball pass before any code. Fold divergences
    into the brief. (An autonomous brief still gets this pass — autonomy is for the work,
    not for skipping the stated goal.)
 5. Do **not** increment `session` in the sync map yet — that happens at close, so a
    brief can be revised or abandoned without burning a number.
+
+---
+
+## Autonomous usage guard
+
+Autonomous sessions run unattended, so a **mid-arc usage cutoff is the real risk** — it
+strands the work with no close-out, breaking the paired-session guarantee. When
+`autonomy.usageGuard.enabled` is set (default on, full tier), an autonomous session
+self-throttles against the host's usage limits. Interactive sessions ignore this entirely
+— a human is watching the cap.
+
+1. **Check before starting the work** (right after the brief's eyeball pass) and **between
+   major steps**: run `autonomy.usageGuard.check` (default
+   `npx -y ccusage@latest blocks --active --json`) and read the active 5-hour / weekly
+   usage. Do not interrupt an in-flight step just to save budget — that loses work; check
+   at step boundaries.
+2. **Below `autonomy.usageGuard.threshold`** (0–1, default `0.95`) → keep going.
+3. **At or above threshold → do not push into the cap.** Stop cleanly: run **Mode: close**
+   now with disposition **PARTIAL**, so the arc so far is captured, the scoreboard/queue
+   reconcile, and **What's next** is concrete enough to reopen from. The paired close-out —
+   not a raw pause — is what preserves state. Then, if a wake/resume tool is available,
+   schedule a re-check for `min(3600, secondsUntilWindowClears)`; otherwise report which
+   window is over, the observed usage, and leave the operator that clean resume point.
+4. **On resume, re-check the *real* window** (a new active-block timestamp is stronger
+   evidence than elapsed wall-clock) before reopening the next session; if still over,
+   reschedule.
+
+**Fail-soft** (same graceful-degradation principle as the external capabilities): if the
+`check` command is missing or errors, the guard **cannot verify usage** — it logs that as
+an `OQ-#`, reports `DONE_WITH_CONCERNS`, and **proceeds** rather than blocking work on a
+missing tool. Never fabricate a usage number.
 
 ---
 

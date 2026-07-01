@@ -4,14 +4,15 @@ version: 1.0.0
 description: |
   Project Ledger — a project operating system: a governance Contract, a
   status-honest scoreboard, a triggered work queue, paired session cadence
-  (brief + close-out), plus runbook / testing / bugs / research artifacts, with
-  optional one-way publish to a tracker (e.g. Confluence + Jira) via a per-project
-  mirror adapter. Local-only by default.
+  (brief + close-out), plus runbook / testing / bugs / research artifacts and
+  on-demand stakeholder digests, with analysis-first adoption and an optional
+  one-way mirror to a tracker (e.g. Confluence + Jira) plus a Slack notifier,
+  via per-project adapters. Local-only by default.
   Keeps "where are we" honest: Live / Current / Planned never blur, vision
   and reality never look identical.
-  Use when asked to "start a ledger", "set up project tracking", "open a
-  session", "close a session", "where are we", "ledger status", "sync the
-  ledger", or "/ledger".
+  Use when asked to "start a ledger", "analyze a project", "set up project
+  tracking", "open a session", "close a session", "where are we", "ledger
+  status", "sync the ledger", "send a digest", or "/ledger".
 allowed-tools:
   - Read
   - Write

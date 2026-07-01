@@ -256,10 +256,11 @@ Honest status, in the skill's own terms — built (Current) vs proven (Live):
   adapter — is dogfood-proven end-to-end on a throwaway repo; the five bugs that surfaced
   (B1–B5) are fixed.
 - **Built but unproven:** the `atlassian` mirror (never run against a real Confluence /
-  Jira), the real Slack POST (needs a webhook — message format + fail-soft are dry-run
-  proven), the **autonomous usage guard** (`autonomy.usageGuard` — needs a real
-  near-the-cap autonomous run to prove the clean-PARTIAL-close + resume), and `analyze` on
-  a real project. All tracked in `BACKLOG.md`.
+  Jira), the Slack notifier's **auto-fire from a real `close` / `digest`** (the POST path +
+  fail-soft are now proven against a real webhook — `200 / ok`; the trigger-wiring still
+  needs a bootstrapped ledger), the **autonomous usage guard** (`autonomy.usageGuard` —
+  needs a real near-the-cap autonomous run to prove the clean-PARTIAL-close + resume), and
+  `analyze` on a real project. All tracked in `BACKLOG.md`.
 - **Not yet adopted:** never bootstrapped on a real project — adoption is deliberately
   gated behind `analyze` so it can't disrupt an in-flight roadmap.
 - **Distribution:** packaged as a Claude Code **plugin** (skill in `skills/ledger/`,

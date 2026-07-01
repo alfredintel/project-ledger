@@ -54,9 +54,11 @@ The dogfood ran on the `none` adapter, so the publishing path is still entirely 
   the metadata header rendering, and the roadmap Jira-macro fallback. Never executed.
 - **Digest publish via `atlassian`** — the Project Digest parent + per-window children.
   Never executed.
-- **Slack notifier** — **built** (`notifiers/slack.md` + the `notify.slack` config), but
-  **unproven**: needs a real incoming-webhook URL in `LEDGER_SLACK_WEBHOOK` to confirm a
-  message actually posts and the fail-soft path behaves.
+- **Slack notifier** — **POST + fail-soft proven (2026-07-01):** a real incoming webhook
+  returned `200 / ok` for the documented `curl`/`jq` path, and the unset-webhook path
+  skips clean (exit 0). **Still unproven:** the notifier firing *automatically* from a real
+  `/ledger close` / `digest` event (message auto-built from close-out data), which needs a
+  bootstrapped ledger to run the mode end-to-end.
 - **Autonomous usage guard** — **built** (`autonomy.usageGuard` config + SKILL.md →
   *Autonomous usage guard*), but **unproven**: needs an autonomous session run near a real
   5-hour / weekly cap to confirm it checks usage, stops with a clean **PARTIAL** close-out

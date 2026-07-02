@@ -13,6 +13,7 @@ description: |
   Use when asked to "start a ledger", "analyze a project", "set up project
   tracking", "open a session", "close a session", "where are we", "ledger
   status", "sync the ledger", "send a digest", or "/ledger".
+argument-hint: analyze | bootstrap | open | close | status | sync | digest
 allowed-tools:
   - Read
   - Write

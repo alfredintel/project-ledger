@@ -4,7 +4,9 @@ Deferred items surfaced by the **2026-06-29 dogfood** (a throwaway `linkstash` r
 `bootstrap → autonomous session → close → digest` on the `none` adapter). The five
 real bugs it found (B1–B5) were fixed the same day, and B8–B9 (plus seeding the full config schema) in a
 2026-06-30 polish pass; B6–B7 remain open, plus the surfaces the `none`-adapter run
-could not exercise.
+could not exercise. B10–B11 were deferred by design in the 2026-07-08 concept/method
+review (which also landed the fix batch: allowed-tools removal, ccusage pinning, the
+Brief: pointer, concurrency doctrine, status drift checks, and a doc-drift sweep).
 
 Written in the ledger's own open-items style (`ID · severity · trigger`).
 
@@ -25,6 +27,28 @@ The window parser rule (a same-weekday request means the *previous* one) exists 
 only exercisable on that weekday; the dogfood ran on a Monday.
 **Trigger:** a Friday run, or add a worked example to the digest window-resolve step and
 have it echo the resolved dates for the operator to sanity-check.
+
+---
+
+## Open — deferred by design (2026-07-08 concept review)
+
+### B10 — Multi-writer lanes: mint session numbers + item IDs at close · severity: low
+The concurrency doctrine is documented (concept.md → *Concurrency — one poster at a
+time*): canonical files are single-poster, sessions serialize, an orchestrator's
+subagents share its session. The mechanics for true concurrent writers — slug-named
+briefs, `NN` and item IDs minted only at the serialized close, close-outs carrying
+deltas the posting applies — are deliberately unbuilt: they would churn a dogfood-proven
+surface for a writer that doesn't exist yet, and the close-out's **Brief:** pointer
+already makes the eventual change non-breaking.
+**Trigger:** the first project with a genuine second concurrent writer (two humans, or
+two independent agent lanes), or the first team adoption.
+
+### B11 — Hook-enforced destructive floor · severity: low
+Contract rule 2 (no destructive action without an in-the-moment human yes) is soft,
+prompt-level governance today. A PreToolUse hook could hard-enforce the floor for
+autonomous sessions.
+**Trigger:** the soft floor demonstrably failing in practice, or unattended autonomous
+runs against infrastructure that can actually be damaged.
 
 ---
 

@@ -107,9 +107,12 @@ open  →  BRIEF-session-NN (bounded goal, eyeball pass)
           │
           ▼
 close →  SESSION-NN-close-out (disposition + evidence + next)
-          │  reconcile: scoreboard · queue · variance log
+          │  reconcile: scoreboard · queue · variance · bugs
           ▼
-publish →  Confluence (hub + children + session log) + Jira (open items)
+publish →  via the mirror adapter (none = local-only default; atlassian = Confluence + Jira)
+          │  + optional Slack ping (notify.slack)
+          ▼
+        🟢/🟡/🔴 status signal
 ```
 
 ## Concurrency — one poster at a time
@@ -168,6 +171,8 @@ team project without changing the discipline.
 
 - Update the scoreboard when a node changes status, when something is
   deployed/verified, or when a capability lands. Keep `Live` honest.
+- A scoreboard node is a capability a stakeholder would ask about. Split a node when a
+  single honest label no longer covers it; merge nodes nobody asks about separately.
 - Give every open item a **trigger**, not just a description — the condition that
   should pull it back onto the active path.
 - When something diverges, log the variance the same session, while the gap is fresh.

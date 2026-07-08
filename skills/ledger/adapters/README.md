@@ -49,7 +49,7 @@ The `mirror` block lives inside the project's sync map. The other top-level keys
   "statusVocab": ["Live", "Current", "Planned"],
   "commit": { "author": "<Name <email>>", "coauthor": "" },
   "digest": { "defaultWindow": "last 7 days" },
-  "notify": { "slack": { "enabled": false, "webhookEnvVar": "LEDGER_SLACK_WEBHOOK", "events": ["digest"], "channel": "#project-updates" } },
+  "notify": { "slack": { "enabled": false, "webhookEnvVar": "LEDGER_SLACK_WEBHOOK", "events": ["digest"], "channel": "" } },
   "autonomy": { "usageGuard": { "enabled": true, "threshold": 0.95, "check": "npx -y ccusage@20.0.14 blocks --active --json" } },
   "mirror": { "adapter": "none" }
 }

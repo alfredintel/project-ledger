@@ -249,7 +249,11 @@ Begin a session with a brief — intent before code.
    into the brief. (An autonomous brief still gets this pass — autonomy is for the work,
    not for skipping the stated goal.)
 5. Do **not** increment `session` in the sync map yet — that happens at close, so a
-   brief can be revised or abandoned without burning a number.
+   brief can be revised or abandoned without burning a number. If a brief **is**
+   abandoned, append an `**Abandoned** (YYYY-MM-DD): <one-line reason>` line to it — the
+   journal is append-only, so mark it, never delete it. That frees its NN for the next
+   open with no ambiguity about which brief the eventual close-out pairs with (pairing
+   is by the close-out's **Brief:** pointer).
 
 ---
 
@@ -430,7 +434,8 @@ journal); on a `minimal`-tier project, say the journal is needed and stop.
    reconciles them: if the scoreboard / queue / variance log have drifted from the
    latest close-out, reconcile the drift so the digest reports honest state. Digest
    does **not** write a close-out or bump `session` — it only ensures truth before it
-   summarizes.
+   summarizes. (Deliberate: digest is the one mode besides `close` with write authority
+   over the canonical files — reconciling drift is honesty work, not session work.)
 5. **Write the local digest** from `templates/DIGEST.md` to
    `docs/digests/digest-<START>_to_<END>.md` (create `docs/digests/` if absent). Fill:
    - **Summary (prose), honest framing:** "From `<START>` to `<END>`, the project moved

@@ -50,7 +50,7 @@ The `mirror` block lives inside the project's sync map. The other top-level keys
   "commit": { "author": "<Name <email>>", "coauthor": "" },
   "digest": { "defaultWindow": "last 7 days" },
   "notify": { "slack": { "enabled": false, "webhookEnvVar": "LEDGER_SLACK_WEBHOOK", "events": ["digest"], "channel": "#project-updates" } },
-  "autonomy": { "usageGuard": { "enabled": true, "threshold": 0.95, "check": "npx -y ccusage@latest blocks --active --json" } },
+  "autonomy": { "usageGuard": { "enabled": true, "threshold": 0.95, "check": "npx -y ccusage@20.0.14 blocks --active --json" } },
   "mirror": { "adapter": "none" }
 }
 ```
@@ -72,7 +72,10 @@ The `mirror` block lives inside the project's sync map. The other top-level keys
   sessions against the host's usage limits: at/above `threshold` (0–1, default `0.95`) of
   the active 5-hour or weekly window it stops cleanly with a **PARTIAL** close-out rather
   than getting cut off mid-arc, then schedules a resume. `check` is the command that
-  reports usage (default `npx -y ccusage@latest blocks --active --json`). Seeded **on**
+  reports usage — seeded **version-pinned** at bootstrap (resolve the current release once
+  with `npm view ccusage version` and write it literally, e.g. `npx -y ccusage@20.0.14
+  blocks --active --json`; never `@latest` — an unattended loop shouldn't fetch-and-run an
+  unpinned package). Seeded **on**
   but **fail-soft** — if `check` is missing or errors it can't verify usage, so it warns,
   reports `DONE_WITH_CONCERNS`, and proceeds. Interactive sessions ignore it. See
   `SKILL.md` → **Autonomous usage guard**.

@@ -212,8 +212,11 @@ no writes). This is what makes it safe to adopt on a project that's already in m
    (`{ "slack": { "enabled": false, "webhookEnvVar": "LEDGER_SLACK_WEBHOOK", "events":
    ["digest"], "channel": "" } }` — seeded **off** so the operator can see and flip it),
    a full-tier `autonomy` block (`{ "usageGuard": { "enabled": true, "threshold": 0.95,
-   "check": "npx -y ccusage@latest blocks --active --json" } }` — seeded **on** but
-   fail-soft; guards autonomous sessions against usage caps),
+   "check": "npx -y ccusage@<version> blocks --active --json" } }` — seeded **on** but
+   fail-soft; guards autonomous sessions against usage caps. **Pin the version:** resolve
+   the current release once (`npm view ccusage version`) and seed it literally (e.g.
+   `ccusage@20.0.14`) — never seed `@latest`; an unattended session shouldn't fetch-and-run
+   an unpinned package. If resolution fails, seed `@latest` and log an `OQ-#` to pin it),
    and the chosen `mirror` block (`{ "adapter": "none" }`, or the `atlassian` block with
    empty `confluence`/`jira` ID maps — the `confluence` map has a key per page, see
    `adapters/atlassian.md`). Seed the optional blocks even when off.
@@ -259,9 +262,9 @@ self-throttles against the host's usage limits. Interactive sessions ignore this
 — a human is watching the cap.
 
 1. **Check before starting the work** (right after the brief's eyeball pass) and **between
-   major steps**: run `autonomy.usageGuard.check` (default
-   `npx -y ccusage@latest blocks --active --json`) and read the active 5-hour / weekly
-   usage. Do not interrupt an in-flight step just to save budget — that loses work; check
+   major steps**: run `autonomy.usageGuard.check` (seeded at bootstrap as a
+   version-pinned `npx -y ccusage@<version> blocks --active --json`) and read the active
+   5-hour / weekly usage. Do not interrupt an in-flight step just to save budget — that loses work; check
    at step boundaries.
 2. **Below `autonomy.usageGuard.threshold`** (0–1, default `0.95`) → keep going.
 3. **At or above threshold → do not push into the cap.** Stop cleanly: run **Mode: close**

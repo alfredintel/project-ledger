@@ -28,6 +28,7 @@ Autonomous work is opt-in (`/ledger open --autonomous`, "plow ahead"): proceed t
 ordinary ambiguity only by logging stated assumptions in the ledger, and never waive the
 no-irreversible-action rule. Full detail in the Contract.
 
-Work happens in sessions: `/ledger open` before, `/ledger close` after. The scoreboard
+Work happens in sessions: `/ledger open` before, `/ledger close` after — one session
+open at a time, and subagent work belongs to the orchestrating session's arc. The scoreboard
 (`docs/{{PREFIX}}_BUILD_STATUS.md`) is the source of truth for "where are we." See
 `README.md` for the full ledger layout.

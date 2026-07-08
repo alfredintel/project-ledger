@@ -112,6 +112,24 @@ close →  SESSION-NN-close-out (disposition + evidence + next)
 publish →  Confluence (hub + children + session log) + Jira (open items)
 ```
 
+## Concurrency — one poster at a time
+
+The canonical files (scoreboard, queue, variance log, sync map) have **one writer at a
+time: the session close**. This is the same single-poster rule as an accounting ledger —
+many journals, one posting — and it is a feature, not a limitation: it is what keeps the
+scoreboard a single honest truth instead of a merge artifact.
+
+A session tracks an **accountability arc, not a process.** An operator orchestrating
+five subagents is still *one* session, closed once by the integrator — the agents' work
+products are inputs to that close-out, never sessions of their own. Sessions therefore
+serialize: one open session per project at a time (`status` flags an unpaired brief).
+
+True multi-writer lanes — concurrent humans or independent agent lanes on branches, with
+session numbers and item IDs minted only at the serialized close — are a designed future,
+deliberately deferred until a second concurrent writer actually exists (tracked in the
+skill repo's `BACKLOG.md`). Past a handful of writers, the right coordination surface is
+the mirror's tracker; the ledger stays the integrator's book of record.
+
 ## The mirror (adapter-based)
 
 Git is always the source of truth. Publishing is a **per-project adapter** (`none` for

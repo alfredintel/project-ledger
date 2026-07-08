@@ -95,6 +95,12 @@ logged assumption, choose the smallest reversible change, decide from repo evide
 on repeated failure. Our enhancement: the assumptions and decisions live in the ledger
 (open items + close-out), not just a chat recap — so autonomy never costs honesty.
 
+## A note on sessions (not a seventh rule)
+
+The ledger's canonical files have one writer at a time — the session close. Keep one
+session open at a time, and treat subagent work as part of the orchestrating session's
+arc, never as sessions of its own.
+
 ---
 
 ## Amendments

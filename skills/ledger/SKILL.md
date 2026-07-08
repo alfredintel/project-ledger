@@ -14,14 +14,6 @@ description: |
   tracking", "open a session", "close a session", "where are we", "ledger
   status", "sync the ledger", "send a digest", or "/ledger".
 argument-hint: analyze | bootstrap | open | close | status | sync | digest
-allowed-tools:
-  - Read
-  - Write
-  - Edit
-  - Bash
-  - Glob
-  - Grep
-  - AskUserQuestion
 ---
 
 # /ledger — Project Ledger
@@ -465,6 +457,11 @@ journal); on a `minimal`-tier project, say the journal is needed and stop.
 The ledger's **external-dependent functions** are independently switchable, and any that
 isn't available is skipped gracefully — never a failure. Local functions (the artifacts,
 `status`, the digest's local file) have no external dependency and are always available.
+
+(The frontmatter deliberately declares no `allowed-tools` restriction: a publishing
+adapter needs its configured MCP server's tools (`mirror.mcpServer`) and a notifier needs
+Bash, so the session's own permission settings govern. A fixed local-tools list would
+block the very publish step the adapter exists for.)
 
 | Capability | Config switch | Depends on |
 |---|---|---|

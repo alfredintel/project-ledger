@@ -348,8 +348,16 @@ this mode, `NN` = `session + 1` (the session being closed).
 Answer "where are we" in seconds. Read `docs/<PREFIX>_BUILD_STATUS.md` and print:
 the one-line summary, the node-by-node status counts (Live / Current / Planned),
 the live operational state block, and the top open items from the queue with their
-triggers. Do not re-derive from git — the scoreboard is the answer. If the
-scoreboard's "Last updated" is older than the latest close-out, flag the drift.
+triggers. Do not re-derive from git — the scoreboard is the answer. Then three cheap,
+read-only **drift checks** (git is not the answer, but it is the witness):
+
+- **Stale scoreboard:** the scoreboard's "Last updated" is older than the latest
+  close-out — flag it.
+- **Unledgered work:** commits exist newer than the latest close-out (e.g. `git log
+  --oneline --since="<that close-out's date>"`) — flag the count and range. Work landing
+  outside sessions makes the ledger silently stale while still looking authoritative.
+- **Unpaired brief:** a `BRIEF-session-*` has no paired close-out and no Abandoned mark
+  — an in-flight session (say so) or a session that was never closed (flag as drift).
 
 Then print a **Capabilities** line (per **Capabilities & graceful degradation** below) so
 it's visible what this project's ledger does and doesn't do. For each external function

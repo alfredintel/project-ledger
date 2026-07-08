@@ -1,6 +1,6 @@
 # SESSION-{{NN}} — {{goal}} — Close-out
 
-**Type:** outcome · **Date:** {{DATE}}
+**Type:** outcome · **Date:** {{DATE}} · **Brief:** [`BRIEF-session-{{NN}}-{{kebab-goal}}.md`](./BRIEF-session-{{NN}}-{{kebab-goal}}.md)
 
 **Disposition:** **{{DONE | PARTIAL | BLOCKED}}.** {{One-line outcome.}}
 

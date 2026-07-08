@@ -292,7 +292,9 @@ adapter. Order matters: **files first (source of truth), publish second.** Throu
 this mode, `NN` = `session + 1` (the session being closed).
 
 1. **Write the close-out** from `templates/SESSION-close-out.md`:
-   `docs/briefs/SESSION-NN-close-out.md`. Disposition (DONE / PARTIAL / BLOCKED),
+   `docs/briefs/SESSION-NN-close-out.md`, with the **Brief:** pointer naming the exact
+   brief file it pairs with — pairing is by pointer, not only by the shared number.
+   Disposition (DONE / PARTIAL / BLOCKED),
    the arc of what was built, the **Decisions & assumptions** made along the way (for an
    autonomous session this is required — every assumption that stood in for a question,
    with its `OQ-#`), any review-pass fixes, **evidence** (tests, live verification — not

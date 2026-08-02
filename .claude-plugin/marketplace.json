@@ -5,7 +5,7 @@
     {
       "name": "project-ledger",
       "source": ".",
-      "description": "Project Ledger (/ledger) — honest project tracking with optional Confluence/Jira mirror + Slack notifier. Local-only by default. Built by Alfred Intel."
+      "description": "Project Ledger (/ledger) — honest project tracking with optional Confluence/Jira mirror + Slack / Google Chat notifiers. Local-only by default. Built by Alfred Intel."
     }
   ]
 }

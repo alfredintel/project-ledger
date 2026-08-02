@@ -49,7 +49,10 @@ The `mirror` block lives inside the project's sync map. The other top-level keys
   "statusVocab": ["Live", "Current", "Planned"],
   "commit": { "author": "<Name <email>>", "coauthor": "" },
   "digest": { "defaultWindow": "last 7 days" },
-  "notify": { "slack": { "enabled": false, "webhookEnvVar": "LEDGER_SLACK_WEBHOOK", "events": ["digest"], "channel": "" } },
+  "notify": {
+    "slack": { "enabled": false, "webhookEnvVar": "LEDGER_SLACK_WEBHOOK", "events": ["digest"], "channel": "" },
+    "google-chat": { "enabled": false, "webhookEnvVar": "LEDGER_GOOGLE_CHAT_WEBHOOK", "events": ["digest"], "space": "" }
+  },
   "autonomy": { "usageGuard": { "enabled": true, "threshold": 0.95, "check": "npx -y ccusage@20.0.14 blocks --active --json" } },
   "mirror": { "adapter": "none" }
 }
@@ -63,11 +66,14 @@ The `mirror` block lives inside the project's sync map. The other top-level keys
 - `digest` is **optional**. `defaultWindow` is the `--since` used when `/ledger digest`
   is run with no window (falls back to `"last 7 days"` if absent). Digest is a
   `full`-tier, on-demand mode — see `SKILL.md` → Mode: digest.
-- `notify` is **optional** and **off by default**. It configures notifiers (Slack today)
-  that ping a channel on `digest` / `close` — separate from `mirror` (a notifier composes
-  with whatever adapter is set, it doesn't replace it). The secret (webhook URL) lives in
-  the env var named by `webhookEnvVar`, never here. Full contract + per-notifier procedure
-  in `notifiers/` (`notifiers/README.md`, `notifiers/slack.md`).
+- `notify` is **optional** and **off by default**. It configures notifiers (Slack and
+  Google Chat today) that ping a chat space on `digest` / `close` — separate from `mirror`
+  (a notifier composes with whatever adapter is set, it doesn't replace it). Each notifier
+  is independent — enable whichever a project uses. The secret (webhook URL) lives in the
+  env var named by `webhookEnvVar`, never here; the informational label key is
+  per-notifier (`channel` for Slack, `space` for Google Chat). Full contract +
+  per-notifier procedure in `notifiers/` (`notifiers/README.md`, `notifiers/slack.md`,
+  `notifiers/google-chat.md`).
 - `autonomy` is **optional** and **full-tier**. `usageGuard` self-throttles *autonomous*
   sessions against the host's usage limits: at/above `threshold` (0–1, default `0.95`) of
   the active 5-hour or weekly window it stops cleanly with a **PARTIAL** close-out rather

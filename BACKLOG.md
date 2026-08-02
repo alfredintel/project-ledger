@@ -83,6 +83,12 @@ The dogfood ran on the `none` adapter, so the publishing path is still entirely 
   skips clean (exit 0). **Still unproven:** the notifier firing *automatically* from a real
   `/ledger close` / `digest` event (message auto-built from close-out data), which needs a
   bootstrapped ledger to run the mode end-to-end.
+- **Google Chat notifier** — **built (2026-08-01):** `notifiers/google-chat.md` +
+  `notify.google-chat` seeded in the schema, and the core now iterates every enabled
+  notifier under `notify.*` (no longer Slack-by-name). **Unproven:** a real Google Chat
+  space webhook returning `200` for the `{text}` payload with Unicode emoji rendering, and
+  the auto-fire from a real `close` / `digest`. **Trigger:** a Google Chat space webhook +
+  a bootstrapped ledger to run the mode end-to-end.
 - **Autonomous usage guard** — **built** (`autonomy.usageGuard` config + SKILL.md →
   *Autonomous usage guard*), but **unproven**: needs an autonomous session run near a real
   5-hour / weekly cap to confirm it checks usage, stops with a clean **PARTIAL** close-out

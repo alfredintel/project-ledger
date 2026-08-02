@@ -6,7 +6,7 @@ description: |
   status-honest scoreboard, a triggered work queue, paired session cadence
   (brief + close-out), plus runbook / testing / bugs / research artifacts and
   on-demand stakeholder digests, with analysis-first adoption and an optional
-  one-way mirror to a tracker (e.g. Confluence + Jira) plus a Slack notifier,
+  one-way mirror to a tracker (e.g. Confluence + Jira) plus Slack / Google Chat notifiers,
   via per-project adapters. Local-only by default.
   Keeps "where are we" honest: Live / Current / Planned never blur, vision
   and reality never look identical.
@@ -209,8 +209,10 @@ no writes). This is what makes it safe to adopt on a project that's already in m
    `prefix` / `slug`, `tier`, `session: 0`, `statusVocab`, an optional `commit` block
    (`author` / `coauthor` — omit to use the repo's own git identity with no injected
    co-author), a `digest` block (`{ "defaultWindow": "last 7 days" }`), a `notify` block
-   (`{ "slack": { "enabled": false, "webhookEnvVar": "LEDGER_SLACK_WEBHOOK", "events":
-   ["digest"], "channel": "" } }` — seeded **off** so the operator can see and flip it),
+   seeding **every** notifier **off** so the operator can see and flip each one (`{
+   "slack": { "enabled": false, "webhookEnvVar": "LEDGER_SLACK_WEBHOOK", "events":
+   ["digest"], "channel": "" }, "google-chat": { "enabled": false, "webhookEnvVar":
+   "LEDGER_GOOGLE_CHAT_WEBHOOK", "events": ["digest"], "space": "" } }`),
    a full-tier `autonomy` block (`{ "usageGuard": { "enabled": true, "threshold": 0.95,
    "check": "npx -y ccusage@<version> blocks --active --json" } }` — seeded **on** but
    fail-soft; guards autonomous sessions against usage caps. **Pin the version:** resolve
@@ -337,13 +339,13 @@ this mode, `NN` = `session + 1` (the session being closed).
    the **Session NN** child under Session Log; Jira create-or-update per open item and
    per `BUG-#`, resolved/fixed items transitioned to Done; record every ID back into
    the `mirror` block).
-9. **Notify (if configured).** If `notify.slack.enabled` and `"close"` is in
-   `notify.slack.events`, post the close summary (session NN, disposition, what's next)
-   per `notifiers/slack.md`. **Fail soft** — a missing webhook never aborts the close.
-   Skip if no notifier is enabled.
+9. **Notify (if configured).** For **each** enabled notifier under `notify.*` whose
+   `events` include `"close"`, post the close summary (session NN, disposition, what's
+   next) per `notifiers/<name>.md` (e.g. `notifiers/slack.md`, `notifiers/google-chat.md`).
+   **Fail soft** — a missing webhook never aborts the close. Skip if no notifier is enabled.
 10. **Commit** the reconciled files + updated sync map per the `commit` config (explicit
    paths, no injected co-author unless configured). Report: what changed, what
-   published, the hub URL if an adapter ran, and whether Slack was notified.
+   published, the hub URL if an adapter ran, and which notifiers fired.
 
 ---
 
@@ -369,11 +371,12 @@ report its state — `on` / `off` / `unavailable` — checked read-only and chea
 
 - **Mirror:** `off` if `mirror.adapter` is `none`; else `on` if the `mirror.mcpServer`
   tools are in scope, or `unavailable (<server> not in scope)` if not.
-- **Slack:** `off` if `notify.slack` is absent/disabled or `events` is empty; else `on` if
-  the webhook env var (`notify.slack.webhookEnvVar`) is set, or `unavailable (<VAR> unset)`.
+- **Notifiers:** one line per configured `notify.<name>` (e.g. Slack, Google Chat) — `off`
+  if absent/disabled or `events` is empty; else `on` if its webhook env var
+  (`notify.<name>.webhookEnvVar`) is set, or `unavailable (<VAR> unset)`.
 - **Digest / local artifacts:** always `available` (no external dependency).
 
-Example: `Capabilities — Mirror: off (local-only) · Slack: unavailable (LEDGER_SLACK_WEBHOOK unset) · Digest: available`.
+Example: `Capabilities — Mirror: off (local-only) · Slack: unavailable (LEDGER_SLACK_WEBHOOK unset) · Google Chat: off · Digest: available`.
 
 ---
 
@@ -460,13 +463,13 @@ journal); on a `minimal`-tier project, say the journal is needed and stop.
    parent exists under the hub, then create-or-update the child page
    `Digest: <START> to <END>` by the ID stored in `mirror.confluence.digests["<START>_to_<END>"]`,
    with the metadata header; write the ID back immediately).
-7. **Notify (if configured).** If `notify.slack.enabled` and `"digest"` is in
-   `notify.slack.events`, post the digest summary per `notifiers/slack.md` (link = the
-   Confluence page URL if step 6 published one, else the local path). **Fail soft** — a
+7. **Notify (if configured).** For **each** enabled notifier under `notify.*` whose
+   `events` include `"digest"`, post the digest summary per `notifiers/<name>.md` (link =
+   the Confluence page URL if step 6 published one, else the local path). **Fail soft** — a
    missing webhook or failed send never aborts the digest. Skip if no notifier is enabled.
 8. **Commit** the new/updated digest file (+ any reconciled canonical files + the sync
    map) per the `commit` config — explicit paths, no `git add -A`. Report: the window,
-   the local path, the page URL if an adapter ran, and whether Slack was notified.
+   the local path, the page URL if an adapter ran, and which notifiers fired.
 
 ---
 
@@ -484,13 +487,13 @@ block the very publish step the adapter exists for.)
 | Capability | Config switch | Depends on |
 |---|---|---|
 | **Mirror** (publish to Confluence/Jira) | `mirror.adapter` (`none` = off) | the MCP server in `mirror.mcpServer` being in scope |
-| **Slack notify** | `notify.slack.enabled` + `events` | the webhook URL in `$<notify.slack.webhookEnvVar>` |
+| **Notifiers** (Slack, Google Chat) | each `notify.<name>.enabled` + `events` | that notifier's webhook URL in `$<notify.<name>.webhookEnvVar>` |
 
 Each capability is in one of three states:
 
-- **off** — disabled in config (`mirror.adapter: none`; `notify.slack` absent/disabled or
-  `events: []`). Treat its external work as a **silent no-op**; don't mention it unless
-  asked.
+- **off** — disabled in config (`mirror.adapter: none`; any `notify.<name>`
+  absent/disabled or `events: []`). Treat its external work as a **silent no-op**; don't
+  mention it unless asked.
 - **on** — enabled in config **and** its dependency resolves. Do the external action.
 - **unavailable** — enabled in config but the dependency is missing at runtime (the MCP
   server isn't in scope; the webhook env var is unset). **Degrade, don't fail:** do all

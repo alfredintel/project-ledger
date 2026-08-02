@@ -101,7 +101,7 @@ close →  SESSION-NN-close-out (disposition + evidence + next)
           │  reconcile: scoreboard · queue · variance · bugs
           ▼
 publish →  via the mirror adapter (none = local-only default; atlassian = Confluence + Jira)
-          │  + optional Slack ping (notify.slack)
+          │  + optional chat ping (notify.slack / notify.google-chat)
           ▼
         🟢/🟡/🔴 status signal
 ```
@@ -116,9 +116,9 @@ publish →  via the mirror adapter (none = local-only default; atlassian = Conf
 | `bootstrap [--dry-run]` | **Analysis-first and gated.** Runs `analyze`, presents the plan, and **stops for your approval before writing anything** — existing files are never overwritten, only missing ones are created. Then seeds from real state, picks tier + adapter, writes the Contract + agent-context pointer + `.ledger/ledger.json`. Does **not** publish. `--dry-run` stops after the analysis. |
 | `open <name> [--autonomous]` | Begin a session with a brief — one bounded goal, intent before code. `--autonomous` lifts stop-on-uncertainty for ordinary ambiguity (assumptions get logged), never for destructive actions. |
 | `close [session]` | The heavy mode. Write the close-out, reconcile the canonical files (scoreboard, queue, variance log, and — full tier — bugs log), then publish via the configured adapter. Files first (source of truth), publish second. |
-| `status` | Answer "where are we" in seconds from the scoreboard. Flags drift: a scoreboard staler than the latest close-out, **unledgered commits** newer than it, and briefs with no paired close-out. Also reports **capabilities** — mirror / Slack as `on` / `off` / `unavailable`. |
+| `status` | Answer "where are we" in seconds from the scoreboard. Flags drift: a scoreboard staler than the latest close-out, **unledgered commits** newer than it, and briefs with no paired close-out. Also reports **capabilities** — mirror and each notifier (Slack, Google Chat) as `on` / `off` / `unavailable`. |
 | `sync` | Force a re-publish through the configured mirror adapter from current file state, no close-out (use after hand-edits or right after bootstrap). |
-| `digest [--since <when>] [--to <when>]` | Generate a digest of what shipped and what's pending over a time window (default: last 7 days). Pulls from session close-outs and the resolved queue. Writes `docs/digests/` (local-first) and, if a publishing adapter is set, mirrors a page under the hub; can also ping Slack. On demand — never auto-runs on close. |
+| `digest [--since <when>] [--to <when>]` | Generate a digest of what shipped and what's pending over a time window (default: last 7 days). Pulls from session close-outs and the resolved queue. Writes `docs/digests/` (local-first) and, if a publishing adapter is set, mirrors a page under the hub; can also ping Slack / Google Chat. On demand — never auto-runs on close. |
 
 ---
 
@@ -152,22 +152,24 @@ The `atlassian` adapter's example target is the Reflex workspace (site
 never baked into the skill. Another workspace fills its own. Commit identity is config
 too (`commit` block; defaults to the repo's own git identity, no injected co-author).
 
-### Notifications (Slack)
+### Notifications (Slack, Google Chat)
 
-Separate from the mirror, a **notifier** can ping a channel when work lands. Slack is the
-first: enable `notify.slack` in `.ledger/ledger.json` and it posts the `digest` summary
-(and optionally the `close` disposition) to a channel via an incoming webhook. It
-**composes** with any adapter — even `none` gets the ping (with the local path as the
-link). The webhook URL is read from an env var (`webhookEnvVar`, default
-`LEDGER_SLACK_WEBHOOK`), never committed; a missing webhook fails soft (the digest/close
-still completes). Off by default. Contract + procedure in `skills/ledger/notifiers/`.
+Separate from the mirror, a **notifier** can ping a chat space when work lands. Two ship
+today — **Slack** (`notify.slack`) and **Google Chat** (`notify.google-chat`) — and each
+is independent, so enable whichever a project uses (both, either, or neither). A notifier
+posts the `digest` summary (and optionally the `close` disposition) to a space via an
+incoming webhook. It **composes** with any adapter — even `none` gets the ping (with the
+local path as the link). The webhook URL is read from an env var (`webhookEnvVar`, e.g.
+`LEDGER_SLACK_WEBHOOK` / `LEDGER_GOOGLE_CHAT_WEBHOOK`), never committed; a missing webhook
+fails soft (the digest/close still completes). Off by default. Contract + per-notifier
+procedure in `skills/ledger/notifiers/`.
 
 **Capabilities & graceful degradation.** `mirror` and `notify` are independent on/off
-switches for the project's external functions. A project with no Confluence/Jira or Slack
-just runs local-only; and a function that's enabled but whose dependency is missing at
-runtime (MCP server out of scope, webhook unset) **degrades** — the local ledger is always
-written, only the external step is skipped and reported (`DONE_WITH_CONCERNS`).
-`/ledger status` shows each as `on` / `off` / `unavailable`.
+switches for the project's external functions. A project with no Confluence/Jira and no
+chat notifier just runs local-only; and a function that's enabled but whose dependency is
+missing at runtime (MCP server out of scope, webhook unset) **degrades** — the local
+ledger is always written, only the external step is skipped and reported
+(`DONE_WITH_CONCERNS`). `/ledger status` shows each as `on` / `off` / `unavailable`.
 
 ---
 
@@ -193,9 +195,10 @@ project-ledger/                    ← repo root · plugin · marketplace
         │   ├── README.md          the adapter contract + the ledger.json schema
         │   ├── none.md            local-only (the default)
         │   └── atlassian.md       Confluence + Jira publish procedure
-        ├── notifiers/             pluggable channel pings (compose with the mirror)
+        ├── notifiers/             pluggable chat pings (compose with the mirror)
         │   ├── README.md          the notifier contract + the notify schema
-        │   └── slack.md           Slack incoming-webhook procedure
+        │   ├── slack.md           Slack incoming-webhook procedure
+        │   └── google-chat.md     Google Chat incoming-webhook procedure
         └── templates/             one per artifact + the README / CLAUDE blocks
             ├── CONTRACT.md
             ├── CLAUDE-ledger-block.md
@@ -247,8 +250,8 @@ writes anything.
 Honest status, in the skill's own terms — built (Current) vs proven (Live):
 
 - **Skill:** all seven modes implemented — `analyze`, `bootstrap`, `open`, `close`,
-  `status`, `sync`, `digest` — with pluggable mirror adapters (`none` / `atlassian`), a
-  Slack notifier, minimal/full tiers, a six-rule governance **Contract** (including
+  `status`, `sync`, `digest` — with pluggable mirror adapters (`none` / `atlassian`),
+  pluggable notifiers (Slack / Google Chat), minimal/full tiers, a six-rule governance **Contract** (including
   ground-in-current-docs and opt-in autonomy), a 🟢/🟡/🔴 status-signal convention,
   capabilities + graceful degradation, and runbook / testing / bugs / research / digest
   artifacts.
@@ -256,9 +259,10 @@ Honest status, in the skill's own terms — built (Current) vs proven (Live):
   adapter — is dogfood-proven end-to-end on a throwaway repo; the five bugs that surfaced
   (B1–B5) are fixed.
 - **Built but unproven:** the `atlassian` mirror (never run against a real Confluence /
-  Jira), the Slack notifier's **auto-fire from a real `close` / `digest`** (the POST path +
-  fail-soft are now proven against a real webhook — `200 / ok`; the trigger-wiring still
-  needs a bootstrapped ledger), the **autonomous usage guard** (`autonomy.usageGuard` —
+  Jira), the notifiers' **auto-fire from a real `close` / `digest`** (Slack's POST +
+  fail-soft are proven against a real webhook — `200 / ok`; Google Chat's POST is not yet
+  proven against a real space webhook; the trigger-wiring for both still needs a
+  bootstrapped ledger), the **autonomous usage guard** (`autonomy.usageGuard` —
   needs a real near-the-cap autonomous run to prove the clean-PARTIAL-close + resume), and
   `analyze` on a real project. All tracked in `BACKLOG.md`.
 - **Not yet adopted:** never bootstrapped on a real project — adoption is deliberately

@@ -1,7 +1,7 @@
 # Notifiers
 
 A **notifier** pushes a short, human-facing update to where a team already pays attention
-(Slack today; Discord/email are future siblings). It is **not a mirror** — it doesn't keep
+(Slack and Google Chat today; Discord/email are future siblings). It is **not a mirror** — it doesn't keep
 durable, idempotent pages in sync. It **composes** with whatever `mirror.adapter` is set:
 run `atlassian` (or `none`) for the canonical record *and* a notifier for the ping.
 Configured per project under `notify` in `.ledger/ledger.json`.
@@ -11,6 +11,7 @@ Configured per project under `notify` in `.ledger/ledger.json`.
 | `notify.<name>` | File | What it does |
 |---|---|---|
 | `slack` | `slack.md` | Posts digest / close summaries to a Slack channel via incoming webhook. |
+| `google-chat` | `google-chat.md` | Posts digest / close summaries to a Google Chat space via incoming webhook. |
 
 ## The notifier contract
 
@@ -38,14 +39,22 @@ Any notifier — the one above, or a future sibling — must honor these:
     "webhookEnvVar": "LEDGER_SLACK_WEBHOOK",
     "events": ["digest", "close"],
     "channel": "#project-updates"
+  },
+  "google-chat": {
+    "enabled": false,
+    "webhookEnvVar": "LEDGER_GOOGLE_CHAT_WEBHOOK",
+    "events": ["digest", "close"],
+    "space": "Project Updates"
   }
 }
 ```
 
-Optional and **off by default** (omit the block, or set `enabled: false`).
+Each notifier is independent — enable **whichever a project uses** (both, either, or
+neither). Optional and **off by default** (omit a block, or set `enabled: false`).
 `webhookEnvVar` names the env var holding the secret (the URL itself is never stored here).
-`events` is a subset of `["digest", "close"]`. `channel` is informational. Full procedure
-per notifier in its own file.
+`events` is a subset of `["digest", "close"]`. The **informational label key differs per
+notifier** — Slack uses `channel`, Google Chat uses `space`; both are human labels only
+(the webhook URL routes). Full procedure per notifier in its own file.
 
 ## Adding a notifier
 
